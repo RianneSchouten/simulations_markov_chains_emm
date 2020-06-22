@@ -1,0 +1,96 @@
+import numpy as np
+import pandas as pd
+#import time
+
+import dataset as dt
+import refinements as rf
+import qualities as qm
+import constraints as cs
+import summaries as su
+
+def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_attribute=None,
+                nr_quantiles=None, quality_measure=None, 
+                w=None, d=None, q=None,
+                save_location=None):
+
+    df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, skip_attributes=skip_attributes,
+                                                                   id_attribute=id_attribute, time_attributes=time_attributes)
+
+    #print(df.head(5))
+    #print(df.shape)
+    #print(cols)
+    #print(bin_atts)
+    #print(nom_atts)
+    #print(num_atts)
+    #print(dt_atts)
+    #print(df.describe(include='all'))
+
+    # Calculate general parameters
+    general_params = qm.calculate_general_parameters(df=df, cols=cols, time_attributes=time_attributes, 
+                                                     id_attribute=id_attribute)
+    # print(general_params)
+
+    candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
+                                                       bin_atts=bin_atts, nom_atts=nom_atts, 
+                                                       num_atts=num_atts, dt_atts=dt_atts,
+                                                       nr_quantiles=nr_quantiles)
+
+    #print('candidate queue:', candidate_queue)
+    
+    result_set = []
+    nconsd = 0
+    for d_i in range(1, d+1):
+
+        #print('level:', d_i)
+
+        cq_satisfied = []
+        for seed in candidate_queue:
+
+            subgroup, idx_sg = dt.select_subgroup(description=seed['description'], df=df, 
+                                                  bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
+                                                  dt_atts=dt_atts)
+            if d_i == 1:
+                seed_set = []
+                seed_set.append(seed)
+            else:                
+                seed_set = rf.refine_seed(seed=seed, subgroup=subgroup, bin_atts=bin_atts, nom_atts=nom_atts,
+                                          num_atts=num_atts, dt_atts=dt_atts, nr_quantiles=nr_quantiles)
+
+            for desc in seed_set:
+
+                # check for redundant descriptions
+                # the comparison has to be done with the candidate queue of the current iteration only
+                # this queue is saved in cq_satisfied
+                redundancy_check = True
+                for seed in cq_satisfied:
+                    if desc['description'] == seed['description']:
+                        redundancy_check = False
+                        break
+
+                if redundancy_check: 
+
+                    subgroup, idx_sg = dt.select_subgroup(description=desc['description'], df=df,
+                                                          bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
+                                                          dt_atts=dt_atts)
+                    # constraint on subgroup size
+                    if len(subgroup)/general_params['data_size'] > 0.1:
+
+                        # calculate quality measure
+                        subgroup_params = qm.calculate_subgroup_parameters(df=df, subgroup=subgroup, idx_sg=idx_sg,
+                                                                           id_attribute=id_attribute, time_attributes=time_attributes, general_params=general_params)
+
+                        desc_qm = qm.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
+                                            subgroup_params=subgroup_params)
+
+                        cq_satisfied.append(desc_qm)
+                        nconsd += 1
+
+        result_set, candidate_queue = su.prepare_resultlist_cq(result_set=result_set, cq_satisfied=cq_satisfied, 
+                                                               quality_measure=quality_measure, q=q, w=w)
+  
+    result_emm = su.resultlist_emm(result_set=result_set)
+    
+    if save_location is not None:
+        result_emm.to_excel(save_location)
+   
+    return result_emm, nconsd

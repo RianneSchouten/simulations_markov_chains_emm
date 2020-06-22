@@ -1,0 +1,5 @@
+#!/bin/sh #save a .sh for usage on the server
+source /home/TUE/20200059/miniconda3/etc/profile.d/conda.sh
+source activate env_name
+python main.py
+source deactivate
