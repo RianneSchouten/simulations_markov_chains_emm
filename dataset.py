@@ -96,6 +96,6 @@ def select_subgroup(description=None, df=None, bin_atts=None, num_atts=None, nom
     pairs = list(description.items())
     idx_sg = select_idx(pairs=pairs, df=df, bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts, dt_atts=dt_atts)
     ####### this should be loc!!
-    subgroup = df.iloc[idx_sg]
+    subgroup = df.loc[idx_sg]
 
     return subgroup, idx_sg
