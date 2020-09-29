@@ -9,13 +9,12 @@ import constraints as cs
 import summaries as su
 
 def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_attribute=None,
-                nr_quantiles=None, quality_measure=None, 
+                first_timepoint=None, nr_quantiles=None, quality_measure=None, 
                 w=None, d=None, q=None,
                 save_location=None):
 
     df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, skip_attributes=skip_attributes,
                                                                    id_attribute=id_attribute, time_attributes=time_attributes)
-
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
@@ -27,8 +26,8 @@ def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_att
 
     # Calculate general parameters
     general_params = qm.calculate_general_parameters(df=df, cols=cols, time_attributes=time_attributes, 
-                                                     id_attribute=id_attribute)
-    # print(general_params)
+                                                     id_attribute=id_attribute, first_timepoint=first_timepoint)
+    #print(general_params)
 
     candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -38,9 +37,10 @@ def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_att
     #print('candidate queue:', candidate_queue)
     
     result_set = []
-    nconsd = 0
+    nconsd_list = []
+    #nconsd = 0
     for d_i in range(1, d+1):
-
+        nconsd = 0
         #print('level:', d_i)
 
         cq_satisfied = []
@@ -77,20 +77,29 @@ def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_att
 
                         # calculate quality measure
                         subgroup_params = qm.calculate_subgroup_parameters(df=df, subgroup=subgroup, idx_sg=idx_sg,
-                                                                           id_attribute=id_attribute, time_attributes=time_attributes, general_params=general_params)
+                                                                           id_attribute=id_attribute, time_attributes=time_attributes, 
+                                                                           first_timepoint=first_timepoint,
+                                                                           general_params=general_params)
 
                         desc_qm = qm.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
-                                            subgroup_params=subgroup_params)
+                                            subgroup_params=subgroup_params, quality_measure=quality_measure)
 
                         cq_satisfied.append(desc_qm)
                         nconsd += 1
 
+        nconsd_list.append(nconsd)
         result_set, candidate_queue = su.prepare_resultlist_cq(result_set=result_set, cq_satisfied=cq_satisfied, 
                                                                quality_measure=quality_measure, q=q, w=w)
-  
+ 
+    # result set is a dictionary
+    # result emm is a dataframe with the descriptive attributes on the columns, and q*2 rows
     result_emm = su.resultlist_emm(result_set=result_set)
+    #print(result_emm)
     
     if save_location is not None:
         result_emm.to_excel(save_location)
+    
+    # nconsd_list contains the number of candidate descriptions that are considered at least level
+    #print(nconsd_list)
    
-    return result_emm, nconsd
+    return result_emm, nconsd_list, general_params

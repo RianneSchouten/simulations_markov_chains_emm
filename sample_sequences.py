@@ -9,6 +9,7 @@ import measures as me
 def define_attributes(dataset=None):
 
     cols = dataset.columns.values.tolist()
+    first_timepoint = 's0'
     time_attributes = ['timepoint1']
     id_attribute = 'n'
     skip_attributes = []
@@ -20,7 +21,7 @@ def define_attributes(dataset=None):
         if col not in id_attribute and col not in time_attributes and 'x' not in col:
             skip_attributes.append(col)
     
-    return time_attributes, skip_attributes, id_attribute
+    return time_attributes, skip_attributes, id_attribute, first_timepoint
 
 def sample_dataset(N=None, T=None, S=None, ncovs=None, distAyn=None, distPiyn=None):
     

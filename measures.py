@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 #import time
 
-def t_count_matrix(df=None, time_attributes=None, states=None):
+def t_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None):
 
     s = len(states)
 
-    ls1 = df[df[time_attributes[0]] == 's0'][time_attributes[1]].value_counts()
+    ls1 = df[df[time_attributes[0]] == first_timepoint][time_attributes[1]].value_counts()
     add_states = list(set(states) - set(ls1.index.tolist()))
     ls1 = ls1.append(pd.Series(np.repeat(0, len(add_states)), index=add_states)).sort_index()
 
@@ -33,8 +33,9 @@ def t_count_matrix(df=None, time_attributes=None, states=None):
         ls_long[ls_long == 0] = 1
 
     tA = lss.values / ls_long
+    tpi = ls1.values / ls1.sum()
 
-    return ls1, ls, lss, tA
+    return ls1, ls, lss, tA, tpi
 
 def manhattan_distance(taA=None, taB=None, lsB=None, weighted=True):
 
@@ -50,6 +51,7 @@ def manhattan_distance(taA=None, taB=None, lsB=None, weighted=True):
 
     return d
 
+'''
 def sample_dataset(df=None, size=None, time_attributes=None, general_params=None, M=None):
 
     states = general_params['states']
@@ -72,8 +74,10 @@ def sample_dataset(df=None, size=None, time_attributes=None, general_params=None
     sigma = np.std(wds)
     
     return mu, sigma
+'''
 
-def log_likelihood(df=None, time_attributes=None, id_attribute=None, states=None, model_ls1=None, model_tA=None, data_ls1=None, data_lss=None):
+def log_likelihood(states=None, model_ls1=None, model_tA=None, data_ls1=None, data_lss=None #,df=None, time_attributes=None, id_attribute=None
+                    ):
 
     pi = model_ls1.values / model_ls1.sum()
     s = len(states)

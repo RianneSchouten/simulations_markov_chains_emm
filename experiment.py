@@ -65,8 +65,7 @@ def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=N
     result_ranks_one_rep = one_repetition(N=params[0], T=params[1], S=params[2],
                                         ncovs=params[3], distAyn=params[4], distPiyn=params[5],
                                         nr_quantiles=nr_quantiles,
-                                        quality_measures=quality_measures, w=w, d=d, q=q,
-                                        save_location=None)
+                                        quality_measures=quality_measures, w=w, d=d, q=q)
   
     return result_ranks_one_rep
 
@@ -76,17 +75,17 @@ def one_repetition(N=None, T=None, S=None, ncovs=None,
                    save_location=None):
 
     tA, tB, dataset, Adist, pidist = ss.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, distAyn=distAyn, distPiyn=distPiyn)
-    time_attributes, skip_attributes, id_attribute = ss.define_attributes(dataset=dataset)
+    time_attributes, skip_attributes, id_attribute, first_timepoint = ss.define_attributes(dataset=dataset)
 
     result_ranks_one_rep = {'Adist': Adist, 'pidist': pidist}
     all_nconsd = [] 
     for quality_measure in quality_measures:
-        result_emm, nconsd = bs.beam_search(dataset=dataset, time_attributes=time_attributes, skip_attributes=skip_attributes, id_attribute=id_attribute,
-                                            nr_quantiles=nr_quantiles, 
-                                            quality_measure=quality_measure, w=w, d=d, q=q,
-                                            save_location=save_location)
-        all_nconsd.append(nconsd)
+        result_emm, nconsd_list, general_params = bs.beam_search(dataset=dataset, time_attributes=time_attributes, skip_attributes=skip_attributes, id_attribute=id_attribute,
+                                                                 first_timepoint=first_timepoint, nr_quantiles=nr_quantiles, 
+                                                                 quality_measure=quality_measure, w=w, d=d, q=q)
+        all_nconsd.append(sum(nconsd_list))
 
+        # here, as part of the experiment, the rank of the true subgroup is evaluated
         result_rank = su.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)
     

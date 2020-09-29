@@ -104,5 +104,54 @@ plot2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
 
 plot2
 
+## presentation
+plot_data <- long_data %>%
+  filter(N == 100) %>%
+  filter(T == 5) %>%
+  filter(S == 5) %>%
+  filter((distAyn == 0 & distPiyn == 1))
+
+plot_for_presentation_1 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+  geom_boxplot(aes(fill = as.factor(ncovs))) +
+  coord_flip() + 
+  facet_wrap(facet~., ncol = 2) +
+  labs(title = 'Difference in initial probabilities',
+       fill = 'ncovs') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        axis.title.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+
+plot_for_presentation_1
+ggsave("plot_100_5_5_pi.eps", width = 16, height = 20, units = "cm")
+
+plot_data <- long_data %>%
+  filter(N == 100) %>%
+  filter(T == 25) %>%
+  filter(S == 25) %>%
+  filter((distAyn == 1 & distPiyn == 0))
+
+plot_for_presentation_2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+  geom_boxplot(aes(fill = as.factor(ncovs))) +
+  coord_flip() + 
+  facet_wrap(facet~., ncol = 2) +
+  labs(title = 'Difference in transition matrix',
+       fill = 'ncovs') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        axis.title.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+
+plot_for_presentation_2
+ggsave("plot_100_25_25_Aboth.eps", width = 16, height = 20, units = "cm")
+
 
 

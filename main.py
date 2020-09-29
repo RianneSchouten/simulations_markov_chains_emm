@@ -18,16 +18,16 @@ def main(experiment=None,
         save_location_added = save_location + '_' + str(seed) + '_' + str(nreps) + 'nreps' + '_' + str(N) + '_' + str(T) + '_' + str(S) + '_' + str(ncovs) + str('.xlsx')
         result_experiment.to_excel(save_location_added)  
 
-    print(result_experiment)
+    print(result_experiment) 
     
 if __name__ == '__main__':
 
     main(nr_quantiles=4, 
          quality_measures=['deltatv', 'omegatv', 'phiwd', 'phikl', 'phiarl', 'phiwarl', 'phibic'],
-         w=10, d=5, q=25,
+         w=10, d=5, q=5,
          save_location='./data_output/experiment_initialprobs',
-         nreps=50, seed=20200619, ncovs=[2, 5, 10, 25],
-         N=[100, 1000], T=[2, 5, 25], S=[2, 5, 25])
+         nreps=2, seed=20200925, ncovs=[2],
+         N=[100], T=[4], S=[3])
 
 
 

@@ -21,18 +21,18 @@ def resultlist_emm(result_set=None):
     for sg in np.arange(1, len(result_set)):
         result_emm = result_emm.append(pd.DataFrame.from_dict(result_set[sg]).T)
     result_emm['sg'] = np.repeat(np.arange(len(result_set)), 2)
-    
-    # sometimes none of the subgroups contain x0 or x1
+
+    return result_emm
+
+def rank_result_emm(result_emm=None, quality_measure=None):
+
+    # sometimes none of the subgroups containS x0 or x1 (true subgroup has a 1 for these two variables)
     # this can be problematic when searching for the rank
     # therefore we add these columns manually with NaN values
     if 'x1' not in result_emm:
         result_emm['x1'] = np.nan
     if 'x0' not in result_emm:
         result_emm['x0'] = np.nan
-
-    return result_emm
-
-def rank_result_emm(result_emm=None, quality_measure=None):
 
     # get the idx of the subgroup of interest
     selection = result_emm.loc[(result_emm['x0'] == 1) & (result_emm['x1'] == 1)]
@@ -52,3 +52,20 @@ def rank_result_emm(result_emm=None, quality_measure=None):
     rank_subgroup = {quality_measure: col_rank}
 
     return rank_subgroup
+
+def join_result_emm(result_emm=None, result_rw_analysis=None, quality_measure=None, q=None):
+
+    result_emm = result_emm.rename(columns={quality_measure:'qm_value'})
+    result_emm['qm'] = np.repeat(quality_measure, q*2)
+
+    result_rw_analysis = result_rw_analysis.append(result_emm)
+
+    return result_rw_analysis
+
+def join_general_params(general_params=None, result_rw_analysis=None):
+
+    print(general_params)
+
+    return result_rw_analysis
+
+
