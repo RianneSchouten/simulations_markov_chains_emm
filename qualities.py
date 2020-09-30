@@ -56,7 +56,7 @@ def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None
 
     return qm_all
 
-def calculate_general_parameters(df=None, cols=None, time_attributes=None, id_attribute=None, first_timepoint=None):
+def calculate_general_parameters(df=None, distribution=None, cols=None, time_attributes=None, id_attribute=None, first_timepoint=None):
 
     data_size = len(df)
     # the first time attribute is the counter or time index, the second and third are the two time points for a 1st order chain
@@ -65,7 +65,14 @@ def calculate_general_parameters(df=None, cols=None, time_attributes=None, id_at
     ls1, ls, lss, tA, tpi = me.t_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint)
     ll_d = me.log_likelihood(states=states, model_ls1=ls1, model_tA=tA, data_ls1=ls1, data_lss=lss)
 
-    general_params = {'ls1': ls1, 'ls': ls, 'lss': lss, 'tA': tA, 'tpi': tpi, 'll_d': ll_d, 'states': states, 'data_size': data_size}  
+    if distribution is not None:
+        mu = np.mean(distribution)
+        sigma = np.std(distribution)
+    else:
+        mu = np.nan
+        sigma = np.nan
+
+    general_params = {'ls1': ls1, 'ls': ls, 'lss': lss, 'tA': tA, 'tpi': tpi, 'll_d': ll_d, 'states': states, 'mu': mu, 'sigma': sigma, 'data_size': data_size}  
 
     return general_params
 
@@ -113,4 +120,18 @@ def h_log_likelihood(general_params=None, subgroup_params=None):
     #BICmismatch = BICdif + ((general_params['ll_d'] - (p * np.log(general_params['data_size']))) - (subgroup_params['ll_sg_d'] - (p * np.log(subgroup_params['sg_size']))))
 
     return llsg, llpisg, phiwd, phikl, phiarl, phiwarl, phibic#, BICmismatch
+
+def check_significance(general_params=None, desc_qm=None, quality_measure=None, Z=None):
+
+    # don't take the absolute value
+    # we want a high quality value
+    z = (desc_qm['qualities'][quality_measure] - general_params['mu']) / general_params['sigma']
+
+    if z >= Z:
+        check = True
+        desc_qm['qualities']['z'] = z
+    else:
+        check = False
+
+    return check, desc_qm
 

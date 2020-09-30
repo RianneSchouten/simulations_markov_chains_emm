@@ -16,11 +16,15 @@ def prepare_resultlist_cq(result_set=None, cq_satisfied=None, quality_measure=No
 
 def resultlist_emm(result_set=None):
 
-    result_set = result_set[0]
-    result_emm = pd.DataFrame.from_dict(result_set[0]).T
-    for sg in np.arange(1, len(result_set)):
-        result_emm = result_emm.append(pd.DataFrame.from_dict(result_set[sg]).T)
-    result_emm['sg'] = np.repeat(np.arange(len(result_set)), 2)
+    if len(result_set[0]) == 0:
+        print('Empty result set')
+        result_emm = None
+    else:
+        result_set = result_set[0]
+        result_emm = pd.DataFrame.from_dict(result_set[0]).T
+        for sg in np.arange(1, len(result_set)):
+            result_emm = result_emm.append(pd.DataFrame.from_dict(result_set[sg]).T)
+        result_emm['sg'] = np.repeat(np.arange(len(result_set)), 2)
 
     return result_emm
 
@@ -55,10 +59,16 @@ def rank_result_emm(result_emm=None, quality_measure=None):
 
 def join_result_emm(result_emm=None, result_rw_analysis=None, quality_measure=None, q=None):
 
-    result_emm = result_emm.rename(columns={quality_measure:'qm_value'})
-    result_emm['qm'] = np.repeat(quality_measure, q*2)
+    if result_emm is not None:
+        if len(result_emm) < q*2:
+            l = len(result_emm)
+        else: 
+            l = q*2
 
-    result_rw_analysis = result_rw_analysis.append(result_emm)
+        result_emm = result_emm.rename(columns={quality_measure:'qm_value'})
+        result_emm['qm'] = np.repeat(quality_measure, l)
+
+        result_rw_analysis = result_rw_analysis.append(result_emm)
 
     return result_rw_analysis
 

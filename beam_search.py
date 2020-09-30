@@ -8,9 +8,9 @@ import qualities as qm
 import constraints as cs
 import summaries as su
 
-def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_attribute=None,
+def beam_search(dataset=None, distribution=None, time_attributes=None, skip_attributes=None, id_attribute=None,
                 first_timepoint=None, nr_quantiles=None, quality_measure=None, 
-                w=None, d=None, q=None,
+                w=None, d=None, q=None, Z=None,
                 save_location=None):
 
     df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, skip_attributes=skip_attributes,
@@ -25,7 +25,7 @@ def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_att
     #print(df.describe(include='all'))
 
     # Calculate general parameters
-    general_params = qm.calculate_general_parameters(df=df, cols=cols, time_attributes=time_attributes, 
+    general_params = qm.calculate_general_parameters(df=df, distribution=distribution, cols=cols, time_attributes=time_attributes, 
                                                      id_attribute=id_attribute, first_timepoint=first_timepoint)
     #print(general_params)
 
@@ -84,7 +84,13 @@ def beam_search(dataset=None, time_attributes=None, skip_attributes=None, id_att
                         desc_qm = qm.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
                                             subgroup_params=subgroup_params, quality_measure=quality_measure)
 
-                        cq_satisfied.append(desc_qm)
+                        if distribution is not None:
+                            # check whether the qm is significant
+                            check, checked_desc_qm = qm.check_significance(general_params=general_params, desc_qm=desc_qm, quality_measure=quality_measure, Z=Z)
+                            if check:
+                                cq_satisfied.append(checked_desc_qm)
+                        else:
+                            cq_satisfied.append(desc_qm)
                         nconsd += 1
 
         nconsd_list.append(nconsd)

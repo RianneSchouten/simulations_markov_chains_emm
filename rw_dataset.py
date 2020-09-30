@@ -1,26 +1,53 @@
 import numpy as np
 import pandas as pd
+import random as r
+import itertools as it
+
 import beam_search as bs
 import summaries as su
-import itertools as it
 import evaluation as ev
+import distribution_false_discoveries as dfd
 
-def analysis_rw_dataset(dataset=None, time_attributes=None, skip_attributes=None, id_attribute=None, first_timepoint=None,
-                        nr_quantiles=None, quality_measures=None, w=None, d=None, q=None):
+def analysis_rw_dataset(dataset=None, calculate_distributions=None, time_attributes=None, skip_attributes=None, id_attribute=None, first_timepoint=None,
+                        nr_quantiles=None, quality_measures=None, w=None, d=None, q=None, m=None, Z=None, save_location=None):
 
+    if calculate_distributions:
+
+        distributions = {}
+
+        for quality_measure in quality_measures:
+
+            # find distribution
+            distribution = dfd.build_distribution(m=m, dataset=dataset, time_attributes=time_attributes, 
+                                                  skip_attributes=skip_attributes, id_attribute=id_attribute, first_timepoint=first_timepoint,
+                                                  nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q)
+            distributions[quality_measure] = distribution
+
+        # save
+        print(distributions)
+        pd_distributions = pd.DataFrame(distributions)
+        pd_distributions.to_excel(save_location + 'distributions.xlsx')   
+
+    else:
+
+        # load
+        distributions = pd.read_excel(save_location + 'distributions.xlsx', sheet_name=0, header=0)
+        print(distributions)
+
+    # use distribution in the beam search 
     result_rw_analysis = pd.DataFrame()
 
     for quality_measure in quality_measures:
-         
-        result_emm, nconsd_list, general_params = bs.beam_search(dataset=dataset, time_attributes=time_attributes, 
+    
+        result_emm, nconsd_list, general_params = bs.beam_search(dataset=dataset, distribution=distributions[quality_measure], time_attributes=time_attributes, 
                                                                  skip_attributes=skip_attributes, id_attribute=id_attribute, first_timepoint=first_timepoint,
-                                                                 nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q)
+                                                                 nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, Z=Z)
 
         # process
         result_rw_analysis = su.join_result_emm(result_emm=result_emm, result_rw_analysis=result_rw_analysis, quality_measure=quality_measure, q=q)
 
     print(general_params)
-    ev.evaluation_figures(result_rw_analysis=result_rw_analysis, general_params=general_params, quality_measures=quality_measures, sg=0, log_transform=False)  
+    ev.evaluation_figures(result_rw_analysis=result_rw_analysis, general_params=general_params, quality_measures=quality_measures, sg=0)  
 
     return result_rw_analysis
 
@@ -62,3 +89,50 @@ def read_callcenter_example(name_dataset=None):
     skip_attributes = ['Agent']
 
     return data, time_attributes, skip_attributes, id_attribute, first_timepoint
+
+def shuffle_dataset(dataset=None, time_attributes=None, id_attribute=None, first_timepoint=None):
+
+    cnts = dataset[id_attribute].value_counts().sort_index()
+    #print(cnts)
+    #print(cnts.iloc[0])
+    idx = cnts.index.values    
+    #print(idx)
+    
+    new_idx = idx.copy()
+    r.shuffle(new_idx)
+    #print(new_idx)
+
+    #print(dataset.loc[dataset[id_attribute] == idx[0], ['Agent Position', 'Product', 'Service Type', 'Agent']])
+    #print(dataset.loc[(dataset[id_attribute] == new_idx[0]) & (dataset[time_attributes[0]] == first_timepoint), ['Agent Position', 'Product', 'Service Type', 'Agent']])
+
+    shuffled_dataset = dataset.copy()
+    #replacement = np.repeat('hoi', 4*cnts.iloc[0]).reshape(2,4)
+    sel = dataset.loc[(dataset[id_attribute] == new_idx[0]) & (dataset[time_attributes[0]] == first_timepoint), ['Agent Position', 'Product', 'Service Type', 'Agent']].values[0]
+    replacement = np.tile(sel, 2)
+    replacement_long = replacement.reshape(cnts.iloc[0], 4)
+    shuffled_dataset.loc[shuffled_dataset[id_attribute] == idx[0], ['Agent Position', 'Product', 'Service Type', 'Agent']] = replacement_long      
+
+    #print(shuffled_dataset.loc[shuffled_dataset[id_attribute] == idx[0], ])
+    #print(shuffled_dataset.loc[shuffled_dataset[id_attribute] == new_idx[0], ])
+
+    length = len(new_idx)
+    total_length = cnts.values.sum()
+    #print(length)
+    #print(total_length)
+    out = list(map(lambda x: np.tile(dataset.loc[(dataset[id_attribute] == new_idx[x]) & 
+                                                 (dataset[time_attributes[0]] == first_timepoint), ['Agent Position', 'Product', 'Service Type', 'Agent']].values[0], 
+                                     cnts.iloc[x]), 
+                             np.arange(length)))
+    #print(out)
+    repl = np.concatenate(out)
+    #print(repl)
+    #print(type(repl))
+    #print(repl.shape)
+    replacement = repl.reshape(total_length, 4)
+    #print(replacement)
+    shuffled_dataset[['Agent Position', 'Product', 'Service Type', 'Agent']] = replacement
+
+    return shuffled_dataset
+
+#def replace_descriptives():
+
