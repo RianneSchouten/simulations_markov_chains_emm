@@ -18,10 +18,10 @@ def beam_search(dataset=None, distribution=None, time_attributes=None, skip_attr
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
-    #print(bin_atts)
-    #print(nom_atts)
-    #print(num_atts)
-    #print(dt_atts)
+    print(bin_atts)
+    print(nom_atts)
+    print(num_atts)
+    print(dt_atts)
     #print(df.describe(include='all'))
 
     # Calculate general parameters
