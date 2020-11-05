@@ -1,14 +1,9 @@
 import numpy as np
 import pandas as pd
 
-def read_data(dataset=None, time_attributes=None, skip_attributes=None, id_attribute=None):
+def read_data(dataset=None, attributes=None):
 
-    if 'xlsx' in dataset:
-        df = pd.read_excel(dataset, sheet_name=0, header=0)
-    else:
-        df = dataset   
-    
-    df = df.drop(skip_attributes, axis=1)
+    df = dataset.drop(attributes['skip_attributes'], axis=1)
     cols = df.dtypes
 
     # print(df.isnull().sum())
@@ -18,9 +13,16 @@ def read_data(dataset=None, time_attributes=None, skip_attributes=None, id_attri
     num_atts = []
     dt_atts = []
 
-    drop_cols = time_attributes
-    if id_attribute is not None:
-        drop_cols.append(id_attribute)
+    if attributes['time_attributes'] is not None:
+        drop_cols = attributes['time_attributes']
+    else: 
+        drop_cols = []
+
+    if attributes['id_attribute'] is not None:
+        drop_cols.append(attributes['id_attribute'])
+
+    if attributes['outcome_attribute'] is not None:
+        drop_cols.append(attributes['outcome_attribute'])    
 
     numerical_types = ['int32', 'int64', 'float64']
     nominal_types = ['object']
@@ -51,7 +53,7 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
         idx = df.index.values
 
         for pair in pairs:
-        
+       
             if pair[0] in bin_atts:
             
                 sel_idx = df[df[pair[0]] == pair[1]].index.values
@@ -95,7 +97,9 @@ def select_subgroup(description=None, df=None, bin_atts=None, num_atts=None, nom
 
     pairs = list(description.items())
     idx_sg = select_idx(pairs=pairs, df=df, bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts, dt_atts=dt_atts)
-    ####### this should be loc!!
+    
+    # this should be loc!!
+    # make sure the dataset is sorted at the beginning of the algorithm
     subgroup = df.loc[idx_sg]
 
-    return subgroup, idx_sg
+    return subgroup, list(idx_sg)

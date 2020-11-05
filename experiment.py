@@ -16,6 +16,7 @@ def experiment(nreps=None, seed=None, ncovs=None,
                save_location=None):
 
     parameter_set = list(it.product(N, T, S, ncovs, [True, False], [True, False])) # the [True, False] is for with/without difference in tA and with/without dif in pi
+    #parameter_set = list(it.product(N, T, S, ncovs, [True], [False]))
     nexp = len(parameter_set)
 
     np.random.seed(seed)
@@ -75,20 +76,33 @@ def one_repetition(N=None, T=None, S=None, ncovs=None,
                    save_location=None):
 
     tA, tB, dataset, Adist, pidist = ss.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, distAyn=distAyn, distPiyn=distPiyn)
-    time_attributes, skip_attributes, id_attribute, first_timepoint = ss.define_attributes(dataset=dataset)
+    attributes = ss.define_attributes(dataset=dataset)
+    #print(dataset.dtypes)
+    #print(dataset.shape)
+
+    '''
+    df_attributes = pd.DataFrame(dict([(k, pd.Series(v)) for k,v in attributes.items()]))
+    dfs = {'data': dataset, 'df_attributes': df_attributes}
+    location_processed = 'data_input/' + 'ss' + '_preprocessed.xlsx'
+
+    if (distAyn == 1) & (pidist == 0):
+        writer = pd.ExcelWriter(location_processed, engine='xlsxwriter')
+        for sheet_name in dfs.keys():
+            dfs[sheet_name].to_excel(writer, sheet_name=sheet_name, index=False)
+        writer.save()
+    '''
 
     result_ranks_one_rep = {'Adist': Adist, 'pidist': pidist}
-    all_nconsd = [] 
     for quality_measure in quality_measures:
-        result_emm, nconsd_list, general_params = bs.beam_search(dataset=dataset, time_attributes=time_attributes, skip_attributes=skip_attributes, id_attribute=id_attribute,
-                                                                 first_timepoint=first_timepoint, nr_quantiles=nr_quantiles, 
-                                                                 quality_measure=quality_measure, w=w, d=d, q=q)
-        all_nconsd.append(sum(nconsd_list))
+        #print('quality_measure', quality_measure)
+        result_emm, considered_subgroups, general_params = bs.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
+                                                                          nr_quantiles=nr_quantiles, save_location=None,
+                                                                          quality_measure=quality_measure, w=w, d=d, q=q)
 
         # here, as part of the experiment, the rank of the true subgroup is evaluated
         result_rank = su.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)
     
-    result_ranks_one_rep.update({'nconsd': np.mean(all_nconsd)})
+    #result_ranks_one_rep.update({'nconsd': np.mean(all_nconsd)})
     
     return result_ranks_one_rep

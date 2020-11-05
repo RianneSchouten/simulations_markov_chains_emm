@@ -22,12 +22,12 @@ def main(experiment=None,
     
 if __name__ == '__main__':
 
-    main(nr_quantiles=4, 
-         quality_measures=['deltatv', 'omegatv', 'phiwd', 'phikl', 'phiarl', 'phiwarl', 'phibic'],
-         w=10, d=5, q=5,
+    main(nr_quantiles=8, 
+         quality_measures=['deltatv', 'omegatv', 'phiwd', 'phikl', 'phiarl', 'phiwarl'],
+         w=25, d=5, q=25,
          save_location='./data_output/experiment_initialprobs',
-         nreps=2, seed=20200925, ncovs=[2],
-         N=[100], T=[4], S=[3])
+         nreps=25, seed=20200102, ncovs=[2, 5, 25],
+         N=[100], T=[2, 5, 25], S=[2, 5, 25])
 
 
 

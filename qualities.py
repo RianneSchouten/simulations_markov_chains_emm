@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import stats
-#import time
 
-import measures as me
+import fomc_measures as fomcm
+import fomc_functions as fomcf
 
 def add_qm(desc=None, idx_sg=None, general_params=None, subgroup_params=None, quality_measure=None):
 
@@ -19,51 +19,25 @@ def add_qm(desc=None, idx_sg=None, general_params=None, subgroup_params=None, qu
 def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None):
 
     qm_all = {}
-   
-    deltatv, omegatv = h_distance_transition_matrix(general_params=general_params, subgroup_params=subgroup_params)
-    llsg, llpisg, phiwd, phikl, phiarl, phiwarl, phibic = \
-        h_log_likelihood(general_params=general_params, subgroup_params=subgroup_params)
 
-    qm_all[quality_measure] = round(eval(quality_measure), 4)    
+    quality_values = fomcf.calculate_quality_values(general_params=general_params, subgroup_params=subgroup_params, quality_measure=quality_measure)
+    #quality_values = cf.calculate_quality_values(general_params=general_params, subgroup_params=subgroup_params, quality_measure=quality_measure)
 
-    #qm_all['deltatv'] = round(d_unw, 4)
-    #qm_all['omegatv'] = round(d_w, 4)
-    #qm_all['sampledwtv'] = round(d_s, 4)
-
-    #rel_size_sg = subgroup_params['sg_size']/general_params['data_size']
-    #rel_size_compl = (general_params['data_size']-subgroup_params['sg_size'])/general_params['data_size']
-    #entropy = -rel_size_sg*np.log(rel_size_sg) - rel_size_compl*np.log(rel_size_compl)
-
-    #qm_all['entropydtv'] = round(entropy*d_unw, 4)
-
-    #qm_all['llsg'] = round(llsg, 4)
-    #qm_all['llpisg'] = round(llpisg, 4)
-    
-    #qm_all['phiwd'] = round(phiwd, 4)
-    #qm_all['phikl'] = round(phikl, 4)
-    #qm_all['entropydifll'] = round(entropy*difll, 4)
-
-    #qm_all['phibic'] = round(phibic, 4)
-    #qm_all['BICmismatch'] = round(BICmismatch, 4)
-
-    #qm_all['phiarl'] = round(phiarl, 4)
-    #qm_all['phiwarl'] = round(phiwarl, 4)
-    #qm_all['entropyrll'] = round(entropy*relativell, 4)
-    
-    qm_all['sg_prop'] = round(subgroup_params['sg_size']/general_params['data_size'], 4)
-    qm_all['tA'] = np.around(subgroup_params['tA'], decimals=4)
-    qm_all['tpi'] = np.around(subgroup_params['tpi'], decimals=4)
+    qm_all.update(quality_values)
+  
+    qm_all['sg_prop'] = round(subgroup_params['sg_size']['nr_sequences']/general_params['data_size']['nr_sequences'], 4)
+    qm_all['idx_sg'] = subgroup_params['idx_sg']
 
     return qm_all
 
-def calculate_general_parameters(df=None, distribution=None, cols=None, time_attributes=None, id_attribute=None, first_timepoint=None):
+def calculate_general_parameters(df=None, distribution=None, cols=None, attributes=None):
 
-    data_size = len(df)
-    # the first time attribute is the counter or time index, the second and third are the two time points for a 1st order chain
-    states = np.unique(np.concatenate((df[time_attributes[1]].unique(), df[time_attributes[2]].unique())))
+    nr_sequences = len(df[attributes['id_attribute']].unique())
+    nr_transitions = len(df)
+    data_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions}
 
-    ls1, ls, lss, tA, tpi = me.t_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint)
-    ll_d = me.log_likelihood(states=states, model_ls1=ls1, model_tA=tA, data_ls1=ls1, data_lss=lss)
+    params = fomcm.params_first_order_markov_chain_general(df=df, attributes=attributes)
+    #params = cme.params_wra_general(df=df, attributes=attributes)
 
     if distribution is not None:
         mu = np.mean(distribution)
@@ -72,66 +46,39 @@ def calculate_general_parameters(df=None, distribution=None, cols=None, time_att
         mu = np.nan
         sigma = np.nan
 
-    general_params = {'ls1': ls1, 'ls': ls, 'lss': lss, 'tA': tA, 'tpi': tpi, 'll_d': ll_d, 'states': states, 'mu': mu, 'sigma': sigma, 'data_size': data_size}  
+    general_params = {'mu': mu, 'sigma': sigma, 'data_size': data_size}
+    general_params.update(params)
 
     return general_params
 
-def calculate_subgroup_parameters(df=None, subgroup=None, idx_sg=None, time_attributes=None, general_params=None, 
-                                  id_attribute=None, first_timepoint=None):
+def calculate_subgroup_parameters(df=None, subgroup=None, idx_sg=None, attributes=None, general_params=None):
 
-    sg_size = len(subgroup)
-    ls1, ls, lss, tA, tpi = me.t_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], 
-                                         first_timepoint=first_timepoint)
+    nr_sequences = len(subgroup[attributes['id_attribute']].unique())
+    nr_transitions = len(subgroup)
+    sg_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions}
 
-    ll_sg = me.log_likelihood(states=general_params['states'], model_ls1=ls1, model_tA=tA, data_ls1=ls1, data_lss=lss)
-    ll_pi_sg = me.log_likelihood(states=general_params['states'], model_ls1=general_params['ls1'], model_tA=general_params['tA'], data_ls1=ls1, data_lss=lss)
-    ll_sg_d = me.log_likelihood(states=general_params['states'], model_ls1=ls1, model_tA=tA, data_ls1=general_params['ls1'], data_lss=general_params['lss'])
-
-    #mu, sigma = me.sample_dataset(df=df, size=sg_size, time_attributes=time_attributes, general_params=general_params, M=50)
-    #if sigma == 0.0: sigma = 1.0
+    params = fomcm.params_first_order_markov_chain_subgroup(subgroup=subgroup, general_params=general_params, attributes=attributes)
         
-    subgroup_params = {'ls1': ls1, 'ls': ls, 'lss': lss, 'tA': tA, 'tpi': tpi, #'mu': mu, 'sigma': sigma, 
-                       'll_sg': ll_sg, 'll_pi_sg': ll_pi_sg, 'll_sg_d': ll_sg_d, 'sg_size': sg_size}
+    subgroup_params = {'sg_size': sg_size, 'idx_sg': idx_sg}
+    subgroup_params.update(params)
 
     return subgroup_params
 
-def h_distance_transition_matrix(general_params=None, subgroup_params=None):
+def check_significance(result_set_ordered=None, general_params=None, quality_measure=None, Z=None):
 
-    deltatv = me.manhattan_distance(taA=general_params['tA'], taB=subgroup_params['tA'], lsB=subgroup_params['ls'], weighted=False)
-    omegatv = me.manhattan_distance(taA=general_params['tA'], taB=subgroup_params['tA'], lsB=subgroup_params['ls'], weighted=True)
+    mu = general_params['mu']
+    sigma = general_params['sigma']
 
-    #d_sg = me.manhattan_distance(taA=general_params['tA'], taB=subgroup_params['tA'], lsB=subgroup_params['ls'], weighted=True)
-    #d_s = (np.abs(d_sg - subgroup_params['mu'])) / subgroup_params['sigma']
+    result_set_selected = []
+    for desc_qm in result_set_ordered:
 
-    return deltatv, omegatv
+        # don't take the absolute value
+        # we want a high quality value
+        z = (desc_qm['qualities'][quality_measure] - mu) / sigma
 
-def h_log_likelihood(general_params=None, subgroup_params=None):
+        if z >= Z:
+            desc_qm['qualities']['z'] = z
+            result_set_selected.append(desc_qm)
 
-    llsg = subgroup_params['ll_sg']
-    llpisg = subgroup_params['ll_pi_sg']
-    phiwd = subgroup_params['ll_sg'] - subgroup_params['ll_pi_sg']
-    phikl = phiwd / subgroup_params['sg_size']
-    phiarl = np.abs((subgroup_params['ll_pi_sg'] / subgroup_params['sg_size']) - (general_params['ll_d'] / general_params['data_size']))
-    phiwarl = np.abs(subgroup_params['sg_size']*((subgroup_params['ll_pi_sg'] / subgroup_params['sg_size']) - (general_params['ll_d'] / general_params['data_size'])))
-
-    p = len(general_params['states'])^2 - 1 # equivalent to m(m-1) for the probs + (m-1) for the initial probs = m^2 - m + m - 1 
-    BIC = 2*subgroup_params['ll_sg'] - (p * np.log(subgroup_params['sg_size']))
-    phibic = BIC - (2*subgroup_params['ll_pi_sg'] - (p * np.log(general_params['data_size'])))
-    #BICmismatch = BICdif + ((general_params['ll_d'] - (p * np.log(general_params['data_size']))) - (subgroup_params['ll_sg_d'] - (p * np.log(subgroup_params['sg_size']))))
-
-    return llsg, llpisg, phiwd, phikl, phiarl, phiwarl, phibic#, BICmismatch
-
-def check_significance(general_params=None, desc_qm=None, quality_measure=None, Z=None):
-
-    # don't take the absolute value
-    # we want a high quality value
-    z = (desc_qm['qualities'][quality_measure] - general_params['mu']) / general_params['sigma']
-
-    if z >= Z:
-        check = True
-        desc_qm['qualities']['z'] = z
-    else:
-        check = False
-
-    return check, desc_qm
+    return result_set_selected
 

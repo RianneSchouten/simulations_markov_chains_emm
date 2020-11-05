@@ -43,7 +43,8 @@ def refine_datetime_attributes(cq=None, seed=None, df=None, subgroup=None, datet
             max_value = values.quantile(1.0)
 
             for i in range(nr_quantiles-1):
-                value = values.quantile(quantiles[i])
+                value = values.quantile(quantiles[i], interpolation='linear')
+
                 refined_cq.append({'description' : {attribute : (min_value, value)}})
                 refined_cq.append({'description' : {attribute : (value, max_value)}})
     
@@ -59,7 +60,7 @@ def refine_datetime_attributes(cq=None, seed=None, df=None, subgroup=None, datet
                 
             for i in range(nr_quantiles-1):
 
-                value = values.quantile(quantiles[i])
+                value = values.quantile(quantiles[i], interpolation='linear')
 
                 temp_desc = description.copy()
                 temp_desc[attribute] = (min_value, value)
@@ -82,6 +83,7 @@ def refine_numerical_attributes(cq=None, seed=None, df=None, subgroup=None, nume
         for attribute in numerical_attributes:
             
             values = df[attribute]
+
             if df[attribute].isnull().any():
                 refined_cq.append({'description' : {attribute : np.nan}})
                 values = values[~np.isnan(values)]  
@@ -91,7 +93,8 @@ def refine_numerical_attributes(cq=None, seed=None, df=None, subgroup=None, nume
             max_value = values.quantile(1.0)
               
             for i in range(nr_quantiles-1):
-                value = values.quantile(quantiles[i])
+                value = values.quantile(quantiles[i], interpolation='linear')
+
                 refined_cq.append({'description' : {attribute : (min_value, value)}})
                 refined_cq.append({'description' : {attribute : (value, max_value)}})       
 
@@ -116,7 +119,7 @@ def refine_numerical_attributes(cq=None, seed=None, df=None, subgroup=None, nume
                 
                 for i in range(nr_quantiles-1):
 
-                    value = values.quantile(quantiles[i])
+                    value = values.quantile(quantiles[i], interpolation='linear')
 
                     temp_desc = description.copy()
                     temp_desc[attribute] = (min_value, value)

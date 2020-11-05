@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 import itertools as it
 import string
-#import time
 
-import measures as me
+import fomc_functions as fomcf
 
 def define_attributes(dataset=None):
 
     cols = dataset.columns.values.tolist()
+    
     first_timepoint = 's0'
     time_attributes = ['timepoint1']
     id_attribute = 'n'
@@ -20,8 +20,15 @@ def define_attributes(dataset=None):
     for col in cols:
         if col not in id_attribute and col not in time_attributes and 'x' not in col:
             skip_attributes.append(col)
+
+    outcome_attribute = None
+    descriptives = None
     
-    return time_attributes, skip_attributes, id_attribute, first_timepoint
+    attributes = {'time_attributes': time_attributes, 'skip_attributes': skip_attributes,
+                  'id_attribute': id_attribute, 'first_timepoint': first_timepoint, 'descriptives': descriptives, 
+                  'outcome_attribute': outcome_attribute}
+
+    return attributes
 
 def sample_dataset(N=None, T=None, S=None, ncovs=None, distAyn=None, distPiyn=None):
     
@@ -56,6 +63,8 @@ def sample_dataset(N=None, T=None, S=None, ncovs=None, distAyn=None, distPiyn=No
     df_min0 = pd.melt(df.loc[:, df.columns != 's' + str(0)], id_vars=id_vars, var_name='timepoint2', value_name='state2')
     
     dataset = pd.concat([df_minT, df_min0[['timepoint2', 'state2']]], axis=1)
+    dataset.sort_values(by = ['n', 'timepoint1'], inplace=True)
+    dataset.reset_index(drop=True, inplace=True)
 
     return tA, tB, dataset, Adist, pidist
 
@@ -77,7 +86,7 @@ def sample_parameters(N=None, S=None, ncovs=None, distAyn=None, distPiyn=None):
         tB = pd.DataFrame(data=tB_values.reshape((S, S)), index=states, columns=states)
         tB = tB / np.repeat(tB.sum(axis=1), S).values.reshape((S, S))
 
-        Adist = me.manhattan_distance(taA=tA.values.reshape(S*S,1), taB=tB.values.reshape(S*S,1), weighted=False)
+        Adist = fomcf.manhattan_distance(taA=tA.values.reshape(S*S,1), taB=tB.values.reshape(S*S,1), weighted=False)
 
     else:
         # sample one transition matrix
@@ -98,7 +107,7 @@ def sample_parameters(N=None, S=None, ncovs=None, distAyn=None, distPiyn=None):
         init_prob_B = init_prob_B / np.sum(init_prob_B)
         tB = tB.append(pd.DataFrame(init_prob_B, columns=['pi'], index=states).T)
 
-        pidist = me.manhattan_distance(taA=init_prob_A, taB=init_prob_B, weighted=False)
+        pidist = fomcf.manhattan_distance(taA=init_prob_A, taB=init_prob_B, weighted=False)
 
     else:
         init_prob_A = np.random.uniform(size=S, low=0.0, high=1.0)
