@@ -31,13 +31,13 @@ def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None
 
     return qm_all
 
-def calculate_general_parameters(df=None, distribution=None, cols=None, attributes=None, order=None):
+def calculate_general_parameters(df=None, distribution=None, cols=None, attributes=None, order=None, start_at_order=None):
 
     nr_sequences = len(df[attributes['id_attribute']].unique())
     nr_transitions = len(df)
     data_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
 
-    params = fomcmo.params_markov_chain_general(df=df, attributes=attributes, order=order)
+    params = fomcmo.params_markov_chain_general(df=df, attributes=attributes, order=order, start_at_order=start_at_order)
 
     if distribution is not None:
         mu = np.mean(distribution)

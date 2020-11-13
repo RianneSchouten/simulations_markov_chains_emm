@@ -54,12 +54,12 @@ def main(subgroup_orders=None,
     
 if __name__ == '__main__':
 
-    main(nr_quantiles=8, subgroup_orders = [2],
+    main(nr_quantiles=8, subgroup_orders = [0,1,2,3,4],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwarl'],
-         w=25, d=5, q=20, start_at_order=5,
+         w=25, d=3, q=20, start_at_order=4,
          save_location='./data_output/experiment_higherorders',
-         nreps=1, seed=20201112, ncovs=[25],
-         N=[100], T=[50], S=[50])
+         nreps=25, seed=20201112, ncovs=[5, 10, 20],
+         N=[100], T=[25, 50], S=[5, 10])
 
 
 

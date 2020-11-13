@@ -5,9 +5,8 @@ def calculate_quality_values(general_params=None, subgroup_params=None, quality_
 
     quality_values = {}
 
-    print('start qms')
     qm, llsg, best_order = search_quality_values(general_params=general_params, subgroup_params=subgroup_params, 
-                                               quality_measure=quality_measure, start_at_order=start_at_order)
+                                                 quality_measure=quality_measure, start_at_order=start_at_order)
 
     #name_quality_measure_pi = quality_measure + '_pi'
     #name_quality_measure_A = quality_measure + '_A'
@@ -26,17 +25,16 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
     o = start_at_order
 
     # calculate reference likelihood
-    llpisg = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs'], initial_freqs=subgroup_params['initial_freqs'], s=len(general_params['states']), max_o=1) 
+    llpisg = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs'], initial_freqs=subgroup_params['initial_freqs'], s=len(general_params['states']), max_o=1)
     subgroup_params.update({'llpisg': llpisg})
 
     if quality_measure in ['deltatv', 'omegatv']:
-        value_o, llsg_o = from_probs_to_quality_value(general_params=general_params, subgroup_params=subgroup_params, quality_measure=quality_measure, max_o=1)
-        qm = value_o
-        llsg = llsg_o
+        deltatv, omegatv = h_distance_transition_matrix(general_params=general_params, subgroup_params=subgroup_params)
+        qm = eval(quality_measure)
+        llsg = np.nan
         order = 1
 
     else:
-        
         value_o, llsg_o = from_probs_to_quality_value(general_params=general_params, subgroup_params=subgroup_params, quality_measure=quality_measure, max_o=o)
 
         if o == 1:
@@ -46,7 +44,6 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
 
         o -= 1
         while o > 0:
-
             value_o_minus_1, llsg_o_minus_1 = from_probs_to_quality_value(general_params=general_params, subgroup_params=subgroup_params, quality_measure=quality_measure, max_o=o)
 
             if np.isnan(value_o) and o != 1: # comparison cannot be made, go to next level
@@ -127,8 +124,6 @@ def calculate_quality_measure(quality_measure=None, llsg=None, subgroup_params=N
     phiarl = np.abs((llpisg / seq_plus_transitions_sg) - (general_params['lld'] / seq_plus_transitions_d))
     phiwarl = np.abs(seq_plus_transitions_sg*((llpisg / seq_plus_transitions_sg) - (general_params['lld'] / seq_plus_transitions_d)))
 
-    deltatv, omegatv = h_distance_transition_matrix(general_params=general_params, subgroup_params=subgroup_params)
-
     value = eval(quality_measure)
 
     return value
@@ -144,7 +139,7 @@ def calculate_log_likelihood(probs=None, freqs=None, initial_freqs=None, max_o=N
     ll = []
 
     if max_o > 0: 
-    
+
         for o in np.arange(0, max_o):
 
             # for the first max_o timepoints, the initial freqs are used
@@ -152,11 +147,10 @@ def calculate_log_likelihood(probs=None, freqs=None, initial_freqs=None, max_o=N
             # the probs are based on the start_at_order frequencies normalized till o
             prob = probs['prob_' + str(o)]
             data = initial_freqs['freq_' + str(o)]
-
-            if 0.0 in prob:
-                prob[prob == 0.] = 0.0000000000001
-        
-            likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob).reshape(s**(o+1),))
+            prob[prob == 0.0] = 0.0000000000001
+            
+            likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob.values.reshape(s**(o+1),)))
+            #likelihood = np.dot(data.values.reshape(total_len,), np.log(prob.values).reshape(total_len,))
             ll.append(likelihood)
 
         # and for the rest of the sequence
@@ -164,11 +158,10 @@ def calculate_log_likelihood(probs=None, freqs=None, initial_freqs=None, max_o=N
         o = max_o
         prob = probs['prob_' + str(o)]
         data = freqs['freq_' + str(o)]
-
-        if 0.0 in prob:
-            prob[prob == 0.] = 0.0000000000001
-    
-        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob).reshape(s**(o+1),))
+        prob[prob == 0.] = 0.0000000000001        
+        
+        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob.values.reshape(s**(o+1),)))
+        #likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob.values.reshape(s**(o+1),)))
         ll.append(likelihood)
 
     if max_o == 0:
@@ -176,11 +169,11 @@ def calculate_log_likelihood(probs=None, freqs=None, initial_freqs=None, max_o=N
         # timepoint 0
         o = 0
         data = initial_freqs['freq_' + str(o)]
-        prob = (data / data.sum()).values
-        if 0.0 in prob:
-            prob[prob == 0.] = 0.0000000000001
-    
-        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob).reshape(s**(o+1),))
+        prob = data.divide(other = data.sum().values[0], axis=0)
+
+        prob[prob == 0.] = 0.0000000000001
+   
+        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob.values.reshape(s**(o+1),)))
         ll.append(likelihood)
 
         # other timepoints
@@ -188,10 +181,9 @@ def calculate_log_likelihood(probs=None, freqs=None, initial_freqs=None, max_o=N
         prob = probs['prob_' + str(o)]
         data = freqs['freq_' + str(o)]
 
-        if 0.0 in prob:
-            prob[prob == 0.] = 0.0000000000001
+        prob[prob == 0.] = 0.0000000000001
     
-        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob).reshape(s**(o+1),))
+        likelihood = np.dot(data.values.reshape(s**(o+1),), np.log(prob.values.reshape(s**(o+1),)))
         ll.append(likelihood)
 
     llt = sum(ll)
@@ -211,12 +203,12 @@ def manhattan_distance(taA=None, taB=None, lsB=None, weighted=True):
 
     g = taB # subgroup
     e = taA # dataset   
-
+    
     if weighted:
         s = len(lsB)
         w = np.repeat(lsB.values, s)
-        d = np.matmul(w, np.abs(g-e).reshape(s*s, ))
+        d = np.matmul(w, np.abs(g-e).values.reshape(s*s, ))
     else:
-        d = np.sum(np.abs(g-e)) 
+        d = np.sum(np.abs(g-e).values) 
 
     return d
