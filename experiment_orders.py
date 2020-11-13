@@ -4,12 +4,12 @@ import itertools as it
 from joblib import Parallel, delayed
 
 import sample_sequences_orders as sso
-import beam_search as bs
-import summaries as su
+import beam_search_orders as bso
+import summaries_orders as suo
 
 def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
-               transition=None, N=None, T=None, S=None, 
-               nr_quantiles=None, constraints=None,
+               N=None, T=None, S=None, 
+               nr_quantiles=None, start_at_order=None,
                quality_measures=None, w=None, d=None, q=None,
                save_location=None):
 
@@ -24,13 +24,24 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
         print('parameters:', params)
 
         ranks_one_parameter_run = parallelization(nreps=nreps, params=params, quality_measures=quality_measures, 
-                                                  nr_quantiles=nr_quantiles, w=w, d=d, q=q)
+                                                  nr_quantiles=nr_quantiles, w=w, d=d, q=q, start_at_order=start_at_order)
 
-        print(ranks_one_parameter_run)
+        # concatenate all results per parameter combination
+        params_pd = pd.DataFrame(np.tile(params, nreps).reshape(nreps, len(params)), columns = ['N', 'T', 'S', 'ncovs', 'subgroup_orders'])
+        ranks_pd = pd.DataFrame(ranks_one_parameter_run)
+        results_one_parameter_pd = pd.concat((params_pd, ranks_pd), axis=1)
+        results_one_parameter_pd.insert(len(params), 'nreps', pd.DataFrame(np.arange(1, nreps+1)))   
 
-    return ranks_one_parameter_run
+        # save with the parameter combination
+        if exp == 0:
+            result_experiment = results_one_parameter_pd
+        else:
+            result_experiment = result_experiment.append(results_one_parameter_pd)
+        result_experiment.reset_index(drop=True)
 
-def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None):
+    return result_experiment
+
+def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None):
 
     inputs = range(nreps)
     #num_cores = multiprocessing.cpu_count() - 2
@@ -41,53 +52,47 @@ def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles
                                                                              params,
                                                                              quality_measures,
                                                                              nr_quantiles,
-                                                                             w, d, q) for i in inputs)
+                                                                             w, d, q,
+                                                                             start_at_order) for i in inputs)
 
     return ranks_one_parameter_run
 
-def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None):
+def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None):
 
     print(i)
     
     result_ranks_one_rep = one_repetition(N=params[0], T=params[1], S=params[2], 
                                           ncovs=params[3], subgroup_order=params[4],
-                                          nr_quantiles=nr_quantiles,
+                                          nr_quantiles=nr_quantiles, start_at_order=start_at_order,
                                           quality_measures=quality_measures, w=w, d=d, q=q)
   
     return result_ranks_one_rep
 
 def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
-                   nr_quantiles=None, 
+                   nr_quantiles=None, start_at_order=None,
                    quality_measures=None, w=None, d=None, q=None,
                    save_location=None):
 
-    tA, tB, dataset, Adist, pidist = sso.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, subgroup_order=subgroup_order)
-    print(dataset.dtypes)
-    print(dataset.shape)
-    
-    attributes = sso.define_attributes(dataset=dataset)  
+    print('start simulating dataset')
+    dataset, states, time_attributes = sso.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, subgroup_order=subgroup_order)    
+    attributes = sso.define_attributes(dataset=dataset, time_attributes=time_attributes)  
 
-    '''
-    result_ranks_one_rep = {'Adist': Adist, 'pidist': pidist}
+    #print(attributes)
+    #print(states)
+    #print(dataset.head(20))
+
+    result_ranks_one_rep = {}
     for quality_measure in quality_measures:
         #print('quality_measure', quality_measure)
-        result_emm, considered_subgroups, general_params = bs.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
-                                                                          nr_quantiles=nr_quantiles, save_location=None,
+        result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
+                                                                          nr_quantiles=nr_quantiles, save_location=None, start_at_order=start_at_order,
                                                                           quality_measure=quality_measure, w=w, d=d, q=q)
 
         # here, as part of the experiment, the rank of the true subgroup is evaluated
-        result_rank = su.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
+        result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)
-    
-    #result_ranks_one_rep.update({'nconsd': np.mean(all_nconsd)})
-    '''
-    result_ranks_one_rep = 10
+
+    #print(result_ranks_one_rep)
 
     return result_ranks_one_rep
 
-result_experiment = experiment(nreps=1, seed=20200102, ncovs=[3], 
-                               N=[5], T=[5], S=[2], 
-                               nr_quantiles=8, subgroup_orders = [2, 3],
-                               quality_measures=['deltatv', 'omegatv', 'phiwd', 'phikl', 'phiarl', 'phiwarl', 'phibic'],
-                               w=25, d=2, q=25,
-                               save_location='./data_output/')

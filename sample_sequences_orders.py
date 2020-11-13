@@ -5,18 +5,14 @@ import string
 
 import fomc_functions as fomcf
 
-def define_attributes(dataset=None):
+def define_attributes(dataset=None, time_attributes=None):
 
     cols = dataset.columns.values.tolist()
     
-    first_timepoint = 's0'
-    time_attributes = ['timepoint1']
     id_attribute = 'n'
+    first_timepoint = 0
     skip_attributes = []
 
-    for col in cols:
-        if 'state' in col:
-            time_attributes.append(col)
     for col in cols:
         if col not in id_attribute and col not in time_attributes and 'x' not in col:
             skip_attributes.append(col)
@@ -30,64 +26,82 @@ def define_attributes(dataset=None):
 
     return attributes
 
-def sample_dataset(N=None, T=None, S=None, ncovs=None, subgroup_order = None, distAyn=None, distPiyn=None):
+def sample_dataset(N=None, T=None, S=None, ncovs=None, subgroup_order = None):
     
-    states, dataset_probs, subgroup_probs, covs = sample_parameters(N=N, S=S, ncovs=ncovs, 
-                                                            subgroup_order=subgroup_order)
+    states, dataset_probs, subgroup_probs, covs = sample_parameters(N=N, S=S, ncovs=ncovs, subgroup_order=subgroup_order)
+
+    timepoint_names = ['s' + str(k) for k in np.arange(T+1)]
 
     df = covs.copy()
     df['n'] = np.arange(N)
     df['g'] = np.where((df.x0 == 1) & (df.x1 == 1), 1, 0)
 
-    df_g1 = df[df.g == 1].copy() # sg
-    N1 = len(df_g1)
-    df_g0 = df[df.g == 0].copy() # non sg
-    N2 = len(df_g0)
+    df_sg = df[df.g == 1].copy().reset_index(drop=True) # sg
+    N1 = len(df_sg)
+    df_d = df[df.g == 0].copy().reset_index(drop=True) # non sg
+    N2 = len(df_d)
 
-    # timepoint s0
-
-    subgroup_probs['probs_0'].index.values
-
-    df_g1['s0'] = np.random.choice(a=states, size=N1, p=subgroup_probs['probs_0']['pi'].values)
-    df_g0['s0'] = np.random.choice(a=states, size=N2, p=dataset_probs['probs_0']['pi'].values)
-
-    print(df_g1)
-
-    # timepoint s1
-    print(df_g1['s0'].values)
-    old_data = [(state,) for state in df_g1['s0']]
-    print(old_data)
-    print(old_data[0])
-    print(subgroup_probs['probs_1'].loc[old_data[0], ])
-    df_g1['s1'] = list(map(lambda x: np.random.choice(a=states, size=1, p=subgroup_probs['probs_1'].loc[x])[0], old_data))
-    print(df_g1['s1'])
-
-    old_data = [(state,) for state in df_g0['s0']]
-    print(old_data)
-    df_g0['s1'] = list(map(lambda x: np.random.choice(a=states, size=1, p=dataset_probs['probs_1'].loc[x])[0], old_data))
-    print(df_g0['s1'])
-
-    for t in np.arange(1, T):
-        old_column = 's' + str(t-1)
-        new_column = 's' + str(t)
-
-        df_g1[new_column] = list(map(lambda x: np.random.choice(a=states, size=1, p=subgroup_probs['probs_' + str].loc[x])[0], df_g1[old_column]))
-        df_g0[new_column] = list(map(lambda x: np.random.choice(a=states, size=1, p=tB.loc[x])[0], df_g0[old_column]))
-    
-    df = pd.concat([df_g1, df_g0])
+    df_sg = sample_extra_timepoints(df_sg=df_sg, probs=subgroup_probs, N=N1, order=subgroup_order, states=states, timepoint_names=timepoint_names, S=S, T=T)
+    df_d = sample_extra_timepoints(df_sg=df_d, probs=dataset_probs, N=N2, order=1, states=states, timepoint_names=timepoint_names, S=S, T=T)
+    df = pd.concat([df_sg, df_d]).sort_values(by=['n'])
     
     # reshape dataset
-    cols = df.columns.values.tolist()
-    all_time_vars = ['s' + str(t) for t in np.arange(T)]
-    id_vars = list(set(cols) - set(all_time_vars))
-    df_minT = pd.melt(df.loc[:, df.columns != 's' + str(T-1)], id_vars=id_vars, var_name='timepoint1', value_name='state1')
-    df_min0 = pd.melt(df.loc[:, df.columns != 's' + str(0)], id_vars=id_vars, var_name='timepoint2', value_name='state2')
-    
-    dataset = pd.concat([df_minT, df_min0[['timepoint2', 'state2']]], axis=1)
-    dataset.sort_values(by = ['n', 'timepoint1'], inplace=True)
-    dataset.reset_index(drop=True, inplace=True)
+    time_attributes = ['transition', 'source', 'target']
+    dataset = from_p_to_2_columns(df=df, time_attributes=time_attributes, T=T)
 
-    return tA, tB, dataset, Adist, pidist
+    return dataset, states, time_attributes
+
+def sample_extra_timepoints(df_sg=None, probs=None, N=None, order=None, states=None, timepoint_names=None, S=None, T=None):
+
+    if order == 0:
+
+        # sample first timepoint from pi
+        first_timepoints = np.random.choice(a=states, size=N, p=probs['probs_0'].values.flatten())
+        df_first_timepoints = pd.DataFrame(first_timepoints, columns=['s0'])
+        name_A = 'probs_' + str(1)
+
+        # get probs of interest
+        probs = probs[name_A]
+        probs_norm = probs / np.repeat(probs.sum(axis=1).values, S).reshape(S**(order+1), S)
+
+        # subgroup timepoint k+2:T
+        for t in np.arange(order+1, T):
+            new_column = 's' + str(t)            
+            df_first_timepoints[new_column] = list(map(lambda x: np.random.choice(a=states, size=1, p=probs_norm.loc[[tuple(df_first_timepoints.loc[x, timepoint_names[t-1:t]])], :].values[0])[0],
+                                                                 np.arange(N)))
+        
+    else:
+        
+        # first timepoints
+        # first order timepoints
+        
+        # check if the sequences are long enough for the desired order
+        if T <= order:
+            name_A = 'probs_' + str(T - 1)
+            order = T - 1
+            print('adapted order to', order)
+        else: 
+            name_A = 'probs_' + str(order)
+        
+        # set the right list of states
+        expended_states = list(it.product(states, repeat=order+1))
+
+        idx_first_timepoints = np.random.choice(a=np.arange(S**(order+1)), size=N, p=probs[name_A].values.flatten())
+        first_timepoints = [expended_states[i] for i in idx_first_timepoints]
+        df_first_timepoints = pd.DataFrame(first_timepoints, columns=timepoint_names[0:(order+1)])
+
+        # normalize probs for sampling each subsequent timepoint
+        probs = probs[name_A]
+        probs_norm = probs / np.repeat(probs.sum(axis=1).values, S).reshape(S**order, S)
+
+        for t in np.arange(order+1, T): #to T gives T-1 transitions
+            new_column = 's' + str(t)
+            df_first_timepoints[new_column] = list(map(lambda x: np.random.choice(a=states, size=1, p=probs_norm.loc[[tuple(df_first_timepoints.loc[x, timepoint_names[t-order:t]])], :].values[0])[0],
+                                                                 np.arange(N)))
+    
+    sampled_timepoint_data = df_sg.join(df_first_timepoints, )
+
+    return sampled_timepoint_data
 
 def sample_parameters(N=None, S=None, ncovs=None, subgroup_order=None):
 
@@ -95,12 +109,14 @@ def sample_parameters(N=None, S=None, ncovs=None, subgroup_order=None):
     letters = []
     for tuple in letters_tuples:
         letters.append(''.join(tuple))
-    states = letters[0:S]
+    states = letters[0:S] 
 
     # sample dataset parameters
     dataset_probs = sample_order_probs(states=states, subgroup_order=1)
     # sample parameters for the subgroup
     subgroup_probs = sample_order_probs(states=states, subgroup_order=subgroup_order)
+    if subgroup_order == 0:
+        subgroup_probs['probs_' + str(1)] = dataset_probs['probs_1']
 
     # sample covariates
     covs = pd.DataFrame()
@@ -120,15 +136,35 @@ def sample_order_probs(states=None, subgroup_order=None):
     index_states = [(st,) for st in states]
     probs['probs_' + str(0)] = pd.DataFrame(p_norm, index=index_states, columns=['pi'])
 
-    for o in np.arange(1, subgroup_order+2):
+    if subgroup_order > 0:
+        for o in np.arange(1, subgroup_order+1):
 
-        # do something
-        p = np.random.uniform(size=S, low=0.0, high=1.0)
-        p_norm = p / np.repeat(p.sum(axis=0), S)
+            # new probs for next level
+            p = np.random.uniform(size=S**(o+1), low=0.0, high=1.0).reshape(S**o, S)
+            p_norm = p.reshape(S**(o+1),) / np.repeat(p.sum(axis=1), S).reshape(S**(o+1),)
     
-        p_norm_cor = np.outer(probs['probs_' + str(o-1)].values.flatten(), p_norm)
-        probs['probs_' + str(o)] = pd.DataFrame(p_norm_cor, index=it.product(states, repeat=o), columns=states)
-
-    print(probs)
+            # we multiply the old probs with the new probs
+            # as such, normalization of a higher order matrix will be valid
+            # it also means that for the final probability matrix, the values sum to 1 for the total matrix, and not per row
+            earlier_probs = np.repeat(probs['probs_' + str(o-1)].values, S).reshape(S**(o+1),)
+            p_norm_cor = earlier_probs * p_norm
+            probs['probs_' + str(o)] = pd.DataFrame(p_norm_cor.reshape(S**o, S), index=it.product(states, repeat=o), columns=states)
 
     return probs
+
+def from_p_to_2_columns(df=None, time_attributes=None, T=None):
+
+    cols = df.columns.values.tolist()
+    all_time_vars = ['s' + str(t) for t in np.arange(T)]
+    id_vars = list(set(cols) - set(all_time_vars))
+
+    source = pd.melt(df.loc[:, df.columns != 's' + str(T-1)], id_vars=id_vars, var_name=time_attributes[0], value_name=time_attributes[1])    
+    target = pd.melt(df.loc[:, df.columns != 's' + str(0)], id_vars=id_vars, var_name='transition2', value_name=time_attributes[2])   
+    dataset = pd.concat([source, target[['transition2', time_attributes[2]]]], axis=1)
+
+    dataset[time_attributes[0]] = dataset[time_attributes[0]].apply(lambda x: int(x[1:]))
+    dataset['transition2'] = dataset['transition2'].apply(lambda x: int(x[1:]))
+    dataset.sort_values(by = ['n', time_attributes[0]], inplace=True)
+    dataset.reset_index(drop=True, inplace=True)
+
+    return dataset

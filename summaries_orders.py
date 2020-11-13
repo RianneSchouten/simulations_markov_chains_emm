@@ -84,6 +84,8 @@ def rank_result_emm(result_emm=None, quality_measure=None):
     # get all descriptions, these are ordered in the result list based on the quality measure
     # the true subgroup has a 1 for the first two covariates (x0 and x1) and NaN for the other covariates
     descriptions = result_emm.loc['description', covs]
+    qualities = result_emm.loc['qualities', :]
+
     selection = list(map(lambda x: all(descriptions.iloc[x, :2].values == list(np.ones(2))) & 
                                     all(pd.isnull(descriptions.iloc[x, 2:])), np.arange(len(descriptions))))
 
@@ -92,12 +94,14 @@ def rank_result_emm(result_emm=None, quality_measure=None):
     # add one to make it a rank (i.e. position 0 will become 1)
     # if all values are False, set rank to q + 1
     if not any(selection):
-        col_rank = len(result_emm) + 1
+        col_rank = len(descriptions) + 1
+        order = np.nan
     else: 
         ids = np.arange(len(descriptions))
         col_rank = ids[selection][0] + 1
+        order = qualities.loc[qualities.sg == col_rank-1, 'best_order'].values[0]
    
-    rank_subgroup = {quality_measure: col_rank}
+    rank_subgroup = {quality_measure + '_rank': col_rank, quality_measure + '_order': order}
 
     return rank_subgroup
 
