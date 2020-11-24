@@ -2,46 +2,90 @@ import numpy as np
 import pandas as pd
 import itertools as it
 
-import fomc_functions_orders as fomcfo
+import mc_functions_orders as fo
 
-def params_markov_chain_general(df=None, attributes=None, order=None, start_at_order=None):
+def params_markov_chain_general(df=None, attributes=None, order=None, start_at_order=None, data_size=None, quality_measure=None):
 
     # the first time attribute is the counter or time index, the second and third are the two time points for a 1st order chain
     time_attributes = attributes['time_attributes']
     first_timepoint = attributes['first_timepoint']
     states = np.unique(np.concatenate((df[time_attributes[1]].unique(), df[time_attributes[2]].unique())))
+    
+    # prepare empty transition matrices for higher order chains
     states, empty_dfs, col_list = order_and_prepare_states(states=states, time_attributes=time_attributes, start_at_order=start_at_order)
 
-    freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                                               id_attribute=attributes['id_attribute'], order=order, col_list=col_list, empty_dfs=empty_dfs)
-    initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                         id_attribute=attributes['id_attribute'], order=new_order, col_list=col_list, empty_dfs=empty_dfs)
-    
-    probs = calculate_model_probs(freqs=freqs, s=len(states), max_o=order)
-    
-    lld = fomcfo.calculate_log_likelihood(probs=probs, freqs=freqs, initial_freqs=initial_freqs, max_o=order, s=len(states))
+    # comment out line 19 to test whether entire dataset follows order 1
+    # furthermore, comment out line 40 and 41, and uncomment lines 36,37
+    # and comment out all lines after line 25 in beam_search_orders
+    # and from line 89 in experiment_orders 
+    #order = start_at_order
 
-    params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'empty_dfs': empty_dfs, 'col_list': col_list, 'lld': lld, 'states': states, 'new_order': new_order}
+    # calculate the frequency matrix
+    freqs, df_additions = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                                    id_attribute=attributes['id_attribute'], order=order, col_list=col_list, empty_dfs=empty_dfs)
+    
+    # calculate the frequency matrices for the first k timepoints
+    initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                         id_attribute=attributes['id_attribute'], order=order, col_list=col_list, empty_dfs=empty_dfs)
+    
+    # calculate the probability transition matrices by normalizing the frequency matrices
+    probs = calculate_model_probs(freqs=freqs, s=len(states), order=order)
+    
+    # calculate the likelihood fit of the entire data plus the order of the markov chain using bic or aic
+    # this function can be used to check the order of the dataset
+    #score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=order, 
+    #                                                         s=len(states), quality_measure=quality_measure, data_size=data_size)
+    # instead, we calculate the lld and score given an order of 1
+    lld, lld_list = fo.calculate_log_likelihood(probs=probs, freqs=freqs, initial_freqs=initial_freqs, ll_list=None, order=order, s=len(states), print_this=False)
+    score = fo.calculate_score(ll=lld, quality_measure=quality_measure, order=order, s=len(states), data_size=data_size, print_this=False)
+    found_order = np.nan
+    
+    #print(found_order)
+    #print(score)
+    #print(lld)
+
+    params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'empty_dfs': empty_dfs, 'col_list': col_list, 
+              'score': score, 'lld': lld, 'found_order': found_order, 'states': states}
 
     return params
 
-def params_markov_chain_subgroup(df=None, subgroup=None, general_params=None, attributes=None, order=None):
+def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_params=None, attributes=None, quality_measure=None, start_at_order=None, ref=None):
 
     time_attributes = attributes['time_attributes']
     first_timepoint = attributes['first_timepoint']
+    params = {}
+   
+    if quality_measure in ['deltatv', 'omegatv']:
 
-    print('start freqs')
-    freqs, sg_additions, new_order = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                                                         id_attribute=attributes['id_attribute'], order=order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+        freqs1_alltimepoints, df_alltimepoints = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], 
+                                                                           first_timepoint=first_timepoint, id_attribute=attributes['id_attribute'], order=1, 
+                                                                           col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+        probs1_alltimepoints = calculate_model_probs(freqs=freqs1_alltimepoints, s=len(general_params['states']), order=1)
+        params.update({'freqs1_alltimepoints': freqs1_alltimepoints, 'probs1_alltimepoints': probs1_alltimepoints})
 
-    print('start initial freqs')
-    initial_freqs = initial_count_matrix(df=sg_additions, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                         id_attribute=attributes['id_attribute'], order=new_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+    else:
 
-    print('start probs')
-    probs = calculate_model_probs(freqs=freqs, s=len(general_params['states']), max_o=new_order)
+        freqs, sg_additions = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                                    id_attribute=attributes['id_attribute'], order=start_at_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
-    params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'new_order': new_order}
+        initial_freqs = initial_count_matrix(df=sg_additions, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                         id_attribute=attributes['id_attribute'], order=start_at_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+
+        probs = calculate_model_probs(freqs=freqs, s=len(general_params['states']), order=start_at_order)
+        params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs})
+
+    # same for complement
+    # complement always has order 1
+    # not necessary if we compare with the dataset
+    if ref != 'dataset':
+        freqs_compl, sg_compl_additions = higher_order_count_matrix(df=subgroup_compl, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                                                id_attribute=attributes['id_attribute'], order=1, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+
+        initial_freqs_compl = initial_count_matrix(df=sg_compl_additions, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                               id_attribute=attributes['id_attribute'], order=1, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+
+        probs_compl = calculate_model_probs(freqs=freqs_compl, s=len(general_params['states']), order=1)
+        params.update({'freqs_compl': freqs_compl, 'initial_freqs_compl': initial_freqs_compl, 'probs_compl': probs_compl})
 
     return params
 
@@ -91,7 +135,7 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
         min_T = min(maxs.iloc[:, -1])
         if min_T + 1 < order:
             order = min_T + 1
-            #print('new order', order)
+            print('new order', order)
         new_order = order
         if order > 1:
             for o in np.arange(2, order+1):
@@ -133,7 +177,7 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
     # for normalized initial probs
     freqs['freq_0'] = pd.DataFrame(lss.sum(axis=1))
 
-    return freqs, df, new_order
+    return freqs, df
 
 def initial_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None, id_attribute=None, order=None, col_list=None, empty_dfs=None):
 
@@ -177,7 +221,7 @@ def initial_count_matrix(df=None, time_attributes=None, states=None, first_timep
 
     return initial_freqs
 
-def calculate_model_probs(freqs=None, s=None, max_o=None):
+def calculate_model_probs(freqs=None, s=None, order=None):
 
     probs = {}
 
@@ -186,7 +230,7 @@ def calculate_model_probs(freqs=None, s=None, max_o=None):
     tpi = lss.divide(other = lss.sum().values[0], axis=0)
     probs['prob_' + str(0)] = tpi
 
-    for o in np.arange(1, max_o+1):
+    for o in np.arange(1, order+1):
 
         lss = freqs['freq_' + str(o)]
         ls = lss.sum(axis=1) # apply to columns will give one sum value per row

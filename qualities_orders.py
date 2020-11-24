@@ -1,14 +1,15 @@
 import numpy as np
 from scipy import stats
 
-import fomc_measures_orders as fomcmo
-import fomc_functions_orders as fomcfo
+import mc_measures_orders as mo
+import mc_functions_orders as fo
 
-def add_qm(desc=None, idx_sg=None, general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None):
+def add_qm(desc=None, idx_sg=None, general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None, ref=None, print_this=None):
 
     qm_all = calculate_qm(general_params=general_params, 
                           subgroup_params=subgroup_params,
                           quality_measure=quality_measure,
+                          ref=ref, print_this=print_this,
                           start_at_order=start_at_order)     
         
     # add new measures to the qualities part
@@ -17,12 +18,12 @@ def add_qm(desc=None, idx_sg=None, general_params=None, subgroup_params=None, qu
        
     return desc_added
 
-def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None):
+def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None, ref=None, print_this=None):
 
     qm_all = {}
 
-    quality_values = fomcfo.calculate_quality_values(general_params=general_params, subgroup_params=subgroup_params, 
-                                                     quality_measure=quality_measure, start_at_order=start_at_order)
+    quality_values = fo.calculate_quality_values(general_params=general_params, subgroup_params=subgroup_params, print_this=print_this,
+                                                 quality_measure=quality_measure, ref=ref, start_at_order=start_at_order)
 
     qm_all.update(quality_values)
   
@@ -31,13 +32,14 @@ def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None
 
     return qm_all
 
-def calculate_general_parameters(df=None, distribution=None, cols=None, attributes=None, order=None, start_at_order=None):
+def calculate_general_parameters(df=None, distribution=None, cols=None, attributes=None, order=None, start_at_order=None, quality_measure=None):
 
     nr_sequences = len(df[attributes['id_attribute']].unique())
     nr_transitions = len(df)
     data_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
 
-    params = fomcmo.params_markov_chain_general(df=df, attributes=attributes, order=order, start_at_order=start_at_order)
+    params = mo.params_markov_chain_general(df=df, attributes=attributes, order=order, start_at_order=start_at_order, 
+                                            data_size=data_size, quality_measure=quality_measure)
 
     if distribution is not None:
         mu = np.mean(distribution)
@@ -51,15 +53,21 @@ def calculate_general_parameters(df=None, distribution=None, cols=None, attribut
 
     return general_params
 
-def calculate_subgroup_parameters(df=None, subgroup=None, idx_sg=None, attributes=None, general_params=None, start_at_order=None):
+def calculate_subgroup_parameters(df=None, subgroup=None, subgroup_compl=None, idx_sg=None, attributes=None, general_params=None, quality_measure=None, start_at_order=None, ref=None):
 
     nr_sequences = len(subgroup[attributes['id_attribute']].unique())
     nr_transitions = len(subgroup)
     sg_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
 
-    params = fomcmo.params_markov_chain_subgroup(subgroup=subgroup, general_params=general_params, attributes=attributes, order=start_at_order)
+    # complement
+    nr_sequences = len(subgroup_compl[attributes['id_attribute']].unique())
+    nr_transitions = len(subgroup_compl)
+    sg_size_compl = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
+
+    params = mo.params_markov_chain_subgroup(subgroup=subgroup, subgroup_compl=subgroup_compl, general_params=general_params, 
+                                             attributes=attributes, quality_measure=quality_measure, start_at_order=start_at_order, ref=ref)
         
-    subgroup_params = {'sg_size': sg_size, 'idx_sg': idx_sg}
+    subgroup_params = {'sg_size': sg_size, 'sg_size_compl': sg_size_compl, 'idx_sg': idx_sg}
     subgroup_params.update(params)
 
     return subgroup_params

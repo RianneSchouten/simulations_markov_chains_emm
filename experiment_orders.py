@@ -8,12 +8,12 @@ import beam_search_orders as bso
 import summaries_orders as suo
 
 def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
-               N=None, T=None, S=None, 
+               N=None, T=None, S=None, refs=None,
                nr_quantiles=None, start_at_order=None,
                quality_measures=None, w=None, d=None, q=None,
                save_location=None):
 
-    parameter_set = list(it.product(N, T, S, ncovs, subgroup_orders)) 
+    parameter_set = list(it.product(N, T, S, ncovs, subgroup_orders, refs)) 
     nexp = len(parameter_set)
 
     np.random.seed(seed)
@@ -27,7 +27,7 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
                                                   nr_quantiles=nr_quantiles, w=w, d=d, q=q, start_at_order=start_at_order)
 
         # concatenate all results per parameter combination
-        params_pd = pd.DataFrame(np.tile(params, nreps).reshape(nreps, len(params)), columns = ['N', 'T', 'S', 'ncovs', 'subgroup_orders'])
+        params_pd = pd.DataFrame(np.tile(params, nreps).reshape(nreps, len(params)), columns = ['N', 'T', 'S', 'ncovs', 'subgroup_orders', 'refs'])
         ranks_pd = pd.DataFrame(ranks_one_parameter_run)
         results_one_parameter_pd = pd.concat((params_pd, ranks_pd), axis=1)
         results_one_parameter_pd.insert(len(params), 'nreps', pd.DataFrame(np.arange(1, nreps+1)))   
@@ -63,17 +63,17 @@ def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=N
     
     result_ranks_one_rep = one_repetition(N=params[0], T=params[1], S=params[2], 
                                           ncovs=params[3], subgroup_order=params[4],
-                                          nr_quantiles=nr_quantiles, start_at_order=start_at_order,
+                                          nr_quantiles=nr_quantiles, ref=params[5], 
+                                          start_at_order=start_at_order,
                                           quality_measures=quality_measures, w=w, d=d, q=q)
   
     return result_ranks_one_rep
 
 def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
-                   nr_quantiles=None, start_at_order=None,
+                   nr_quantiles=None, ref=None, start_at_order=None,
                    quality_measures=None, w=None, d=None, q=None,
                    save_location=None):
 
-    print('start simulating dataset')
     dataset, states, time_attributes = sso.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, subgroup_order=subgroup_order)    
     attributes = sso.define_attributes(dataset=dataset, time_attributes=time_attributes)  
 
@@ -83,14 +83,14 @@ def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
 
     result_ranks_one_rep = {}
     for quality_measure in quality_measures:
-        print('quality_measure', quality_measure)
+        #print('quality_measure', quality_measure)
         result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
-                                                                          nr_quantiles=nr_quantiles, save_location=None, start_at_order=start_at_order,
-                                                                          quality_measure=quality_measure, w=w, d=d, q=q)
-
+                                                                          nr_quantiles=nr_quantiles, save_location=None, ref=ref, start_at_order=start_at_order,
+                                                                          quality_measure=quality_measure, w=w, d=d, q=q, Z=None)
         # here, as part of the experiment, the rank of the true subgroup is evaluated
         result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)
+        #result_ranks_one_rep.update(result_emm)
 
     #print(result_ranks_one_rep)
 

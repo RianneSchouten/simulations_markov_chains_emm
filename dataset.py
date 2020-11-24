@@ -91,15 +91,22 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
                 sel_idx = np.intersect1d(low_idx, up_idx)
                 idx = np.intersect1d(idx, sel_idx)        
 
-    return idx
+    all_idx = df.index.values
+    idx_compl = np.setdiff1d(all_idx, idx)
+
+    return idx, idx_compl
 
 def select_subgroup(description=None, df=None, bin_atts=None, num_atts=None, nom_atts=None, dt_atts=None):
 
     pairs = list(description.items())
-    idx_sg = select_idx(pairs=pairs, df=df, bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts, dt_atts=dt_atts)
+    idx_sg, idx_compl = select_idx(pairs=pairs, df=df, bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts, dt_atts=dt_atts)
     
     # this should be loc!!
     # make sure the dataset is sorted at the beginning of the algorithm
     subgroup = df.loc[idx_sg]
+    subgroup_compl = df.loc[idx_compl]
 
-    return subgroup, list(idx_sg)
+    #print(list(idx_sg))
+    #print(list(idx_compl))
+
+    return subgroup, list(idx_sg), subgroup_compl, list(idx_compl)

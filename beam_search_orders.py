@@ -8,7 +8,7 @@ import constraints as cs
 import summaries_orders as suo
 
 def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=None, quality_measure=None, 
-                w=None, d=None, q=None, Z=None, start_at_order=None,
+                w=None, d=None, q=None, Z=None, ref=None, start_at_order=None,
                 save_location=None):
 
     df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, attributes=attributes)
@@ -22,7 +22,8 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     #print(df.describe(include='all'))
 
     # Calculate general parameters
-    general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, start_at_order=start_at_order)
+    general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
+                                                      start_at_order=start_at_order, quality_measure=quality_measure)
     #print(general_params)
 
     candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
@@ -42,12 +43,12 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         n_small_groups = 0
         n_redundant_coverage = 0
         
-        print('level:', d_i)
+        #print('level:', d_i)
 
         cq_satisfied = []
         for seed in candidate_queue:
 
-            subgroup, idx_sg = dt.select_subgroup(description=seed['description'], df=df, 
+            subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=seed['description'], df=df, 
                                                   bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
                                                   dt_atts=dt_atts)
             if d_i == 1:
@@ -59,7 +60,10 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
             for desc in seed_set:
 
-                print(desc['description'])
+                print_this = False
+                #if desc['description'] == {'x0': 1, 'x1': 1}:
+                #    print(desc['description'])
+                #    print_this = True
                 n_consd += 1
    
                 redundancy_check_description = cs.redundant_description(desc=desc, cq_satisfied=cq_satisfied)    
@@ -67,7 +71,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                 if not redundancy_check_description:
                     n_redundant_descs += 1
                 else:
-                    subgroup, idx_sg = dt.select_subgroup(description=desc['description'], df=df,
+                    subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=desc['description'], df=df,
                                                           bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
                                                           dt_atts=dt_atts)
                     
@@ -82,15 +86,15 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                             n_redundant_coverage += 1
                         else:                        
                             # calculate quality measure
-                            subgroup_params = qmo.calculate_subgroup_parameters(df=df, subgroup=subgroup, idx_sg=idx_sg,
-                                                                                attributes=attributes, start_at_order=start_at_order,
-                                                                                general_params=general_params)
+                            subgroup_params = qmo.calculate_subgroup_parameters(df=df, subgroup=subgroup, subgroup_compl=subgroup_compl, idx_sg=idx_sg,
+                                                                                attributes=attributes, quality_measure=quality_measure, start_at_order=start_at_order,
+                                                                                general_params=general_params, ref=ref)
                             #print(subgroup_params)
 
                             # do heuristic search process for initial probs and for higher order
                             desc_qm = qmo.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
                                                  subgroup_params=subgroup_params, quality_measure=quality_measure, 
-                                                 start_at_order=subgroup_params['new_order'])
+                                                 ref=ref, start_at_order=start_at_order, print_this=print_this)
 
                             cq_satisfied.append(desc_qm)                 
 
@@ -112,5 +116,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     
     # nconsd_list contains the number of candidate descriptions that are considered at least level
     #print(nconsd_list)
-   
+
     return result_emm, considered_subgroups, general_params
+
+    #return {quality_measure: general_params['found_order']},2,3
