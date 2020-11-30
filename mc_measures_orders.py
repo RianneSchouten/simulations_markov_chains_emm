@@ -55,13 +55,15 @@ def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_par
     first_timepoint = attributes['first_timepoint']
     params = {}
    
-    if quality_measure in ['deltatv', 'omegatv']:
+    if quality_measure in ['deltatv', 'omegatv', 'phiwrl']:
 
         freqs1_alltimepoints, df_alltimepoints = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], 
                                                                            first_timepoint=first_timepoint, id_attribute=attributes['id_attribute'], order=1, 
                                                                            col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+        initial_freqs = initial_count_matrix(df=df_alltimepoints, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                             id_attribute=attributes['id_attribute'], order=1, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
         probs1_alltimepoints = calculate_model_probs(freqs=freqs1_alltimepoints, s=len(general_params['states']), order=1)
-        params.update({'freqs1_alltimepoints': freqs1_alltimepoints, 'probs1_alltimepoints': probs1_alltimepoints})
+        params.update({'freqs1_alltimepoints': freqs1_alltimepoints, 'probs1_alltimepoints': probs1_alltimepoints, 'initial_freqs': initial_freqs})
 
     else:
 

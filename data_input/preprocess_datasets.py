@@ -13,8 +13,10 @@ import read_dialect_glucose as rdg
 #data, attributes = rsp.read_studyportals(name_dataset='studyportals')
 
 # dialect
-data, attributes = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata')
+data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=1)
+#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=2)
 
 print('attributes', attributes)
 print('data', data.head(10))
+print('combinations', combinations)
 

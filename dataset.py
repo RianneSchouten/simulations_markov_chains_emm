@@ -53,7 +53,7 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
         idx = df.index.values
 
         for pair in pairs:
-       
+
             if pair[0] in bin_atts:
             
                 sel_idx = df[df[pair[0]] == pair[1]].index.values
@@ -67,11 +67,10 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
                     sel_idx = df[df[pair[0]].isnull()].index.values
                     idx = np.intersect1d(idx, sel_idx)
                 
-                else:
-                    low_idx =  df[df[pair[0]] >= pair[1][0]].index.values # value can be equal to the lower bound
-                    up_idx = df[df[pair[0]] <= pair[1][1]].index.values # value can be equal to the upper bound            
-                    sel_idx = np.intersect1d(low_idx, up_idx)
-                    idx = np.intersect1d(idx, sel_idx)
+                low_idx =  df[df[pair[0]] >= pair[1][0]].index.values # value can be equal to the lower bound
+                up_idx = df[df[pair[0]] <= pair[1][1]].index.values # value can be equal to the upper bound            
+                sel_idx = np.intersect1d(low_idx, up_idx)
+                idx = np.intersect1d(idx, sel_idx)
 
             elif pair[0] in nom_atts:
 

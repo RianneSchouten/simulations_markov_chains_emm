@@ -28,7 +28,9 @@ def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None
     qm_all.update(quality_values)
   
     qm_all['sg_prop'] = round(subgroup_params['sg_size']['nr_sequences']/general_params['data_size']['nr_sequences'], 4)
-    qm_all['idx_sg'] = subgroup_params['idx_sg']
+    qm_all['idx_sg'] = subgroup_params['idx_sg']    
+    qm_all['prob_0'] = subgroup_params['probs']['prob_0']    
+    qm_all['prob_1'] = subgroup_params['probs']['prob_1']   
 
     return qm_all
 
@@ -58,16 +60,18 @@ def calculate_subgroup_parameters(df=None, subgroup=None, subgroup_compl=None, i
     nr_sequences = len(subgroup[attributes['id_attribute']].unique())
     nr_transitions = len(subgroup)
     sg_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
+    subgroup_params = {'sg_size': sg_size, 'idx_sg': idx_sg}
 
     # complement
-    nr_sequences = len(subgroup_compl[attributes['id_attribute']].unique())
-    nr_transitions = len(subgroup_compl)
-    sg_size_compl = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
+    if ref != 'dataset':
+        nr_sequences = len(subgroup_compl[attributes['id_attribute']].unique())
+        nr_transitions = len(subgroup_compl)
+        sg_size_compl = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
+        subgroup_params.update({'sg_size_compl': sg_size_compl})
 
     params = mo.params_markov_chain_subgroup(subgroup=subgroup, subgroup_compl=subgroup_compl, general_params=general_params, 
                                              attributes=attributes, quality_measure=quality_measure, start_at_order=start_at_order, ref=ref)
         
-    subgroup_params = {'sg_size': sg_size, 'sg_size_compl': sg_size_compl, 'idx_sg': idx_sg}
     subgroup_params.update(params)
 
     return subgroup_params

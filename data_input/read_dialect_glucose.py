@@ -5,7 +5,7 @@ import itertools as it
 import string
 import matplotlib.pyplot as plt
 
-def read_dialect_glucose(name_dataset=None):
+def read_dialect_glucose(name_dataset=None, type_states=None):
 
     # read descriptives
     descriptive_data, skip_attributes, id_attribute, descriptives = read_dialect_descriptives(name_dataset=name_dataset)
@@ -34,8 +34,8 @@ def read_dialect_glucose(name_dataset=None):
                                        decimal=',')
         
         # calculate states from glucose values
-        range_data, first_timepoint, time_attributes = ranges_from_glucose(glucose_data=glucose_data)
-        states_data, time_attributes = states_from_ranges(range_data=range_data, time_attributes=time_attributes)
+        range_data, first_timepoint, time_attributes = ranges_from_glucose(glucose_data=glucose_data, type_states=type_states)
+        states_data, combinations = states_from_ranges(range_data=range_data, time_attributes=time_attributes, type_states=type_states)
         states_data_complete, time_attributes = create_two_time_columns(states_data=states_data, time_attributes=time_attributes)
 
         # merge with descriptive
@@ -56,15 +56,15 @@ def read_dialect_glucose(name_dataset=None):
                'outcome_attribute': outcome_attribute}
     df_attributes = pd.DataFrame(dict([(k, pd.Series(v)) for k,v in attributes.items()]))
 
-    dfs = {'data': data, 'df_attributes': df_attributes}
-    location_processed = name_dataset + '_preprocessed.xlsx'
+    dfs = {'data': data, 'df_attributes': df_attributes, 'combinations': combinations}
+    location_processed = name_dataset + '_' + str(type_states) + '_preprocessed.xlsx'
 
     writer = pd.ExcelWriter(location_processed, engine='xlsxwriter')
     for sheet_name in dfs.keys():
         dfs[sheet_name].to_excel(writer, sheet_name=sheet_name, index=False)
     writer.save()
 
-    return data, attributes
+    return data, attributes, combinations
 
 def read_dialect_descriptives(name_dataset=None):
 
@@ -76,12 +76,16 @@ def read_dialect_descriptives(name_dataset=None):
     data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H'))
 
     # we are selecting all variables that Niala is using in her article
-    # In addition, we add insuline?, chol ratio, eGFR, kcal, eitwittot and vettot. The latter three because of food habits
     # We also add HbA1c as a category according to Niala's article
     # all variables have a nice distribution, except for Mixed Regimen which is mostly 0. 
     # There are more than 10% of patientes with 1 though, so I did not remove the attr.
 
-    drop_columns = [columns[2:5], columns[7:9], columns[10:12], columns[21:27], columns[31:34], columns[38:43], columns[46:50], columns[54:58]]
+    #drop_columns = [columns[2:5], columns[7:9], columns[10:12], columns[18], columns[21:26], columns[31:36], columns[38:43], columns[54:58]]
+    
+    drop_columns = [columns[2:5], columns[7:9], columns[10:12], columns[21:26], columns[28:29], columns[31:36], columns[38:50], columns[54:58]]
+    # less covs
+    #drop_columns = [columns[2:5], columns[7:18], columns[21:26], columns[28:29], columns[31:36], columns[38:50], columns[54:58]]
+    
     drop_columns_flat = [item for sublist in drop_columns for item in sublist]
     data = data.drop(drop_columns_flat, axis=1)
     data.corr().to_excel(name_dataset + '_correlation.xlsx')
@@ -114,83 +118,102 @@ def read_dialect_descriptives(name_dataset=None):
 
     return data, skip_attributes, id_attribute, descriptives
 
-def ranges_from_glucose(glucose_data=None):
+def ranges_from_glucose(glucose_data=None, type_states=None):
 
     glucose_column = 'Historie glucose (mmol/L)'
     glucose_data = glucose_data.dropna(subset=[glucose_column])
     glucose_data = glucose_data.reset_index(drop=True)
-    
-    Dates = pd.DataFrame(glucose_data['Tijd'].dt.date.values, columns=['Date'])
-    glucose_data = glucose_data.join(Dates)
-    Timepoints = pd.factorize(glucose_data.Date, sort=True)[0]
-    glucose_data['Timepoints'] = Timepoints
 
-    first_timepoint = 0
-    
-    # every day is a timepoint
-    # calculate nr of measures in TIR, TBR1, TBR2, TAR1, TAR2
+    if type_states == 1:
+        # every day is a timepoint
+        # calculate nr of measures in TIR, TBR1, TBR2, TAR1, TAR2
+        
+        Dates = pd.DataFrame(glucose_data['Tijd'].dt.date.values, columns=['Date'])
+        glucose_data = glucose_data.join(Dates)
+        Timepoints = pd.factorize(glucose_data.Date, sort=True)[0]
+        glucose_data['Timepoints'] = Timepoints
 
-    glucose_data = glucose_data[['Historie glucose (mmol/L)', 'Timepoints']]
+        first_timepoint = 0
+        
+        glucose_data = glucose_data[['Historie glucose (mmol/L)', 'Timepoints']]
 
-    Count = np.repeat(1, len(glucose_data))
-    TIR = np.where((glucose_data[glucose_column] < 10.0) & (glucose_data[glucose_column] > 3.9), 1, 0)
-    TBR1 = np.where((glucose_data[glucose_column] <= 3.9) & (glucose_data[glucose_column] >= 3.0), 1, 0)
-    TBR2 = np.where(glucose_data[glucose_column] < 3.0, 1, 0)
-    TAR1 = np.where((glucose_data[glucose_column] <= 13.9) & (glucose_data[glucose_column] >= 10.0), 1, 0)
-    TAR2 = np.where(glucose_data[glucose_column] > 13.9, 1, 0)
+        Count = np.repeat(1, len(glucose_data))
+        TIR = np.where((glucose_data[glucose_column] < 10.0) & (glucose_data[glucose_column] > 3.9), 1, 0)
+        TBR1 = np.where((glucose_data[glucose_column] <= 3.9) & (glucose_data[glucose_column] >= 3.0), 1, 0)
+        TBR2 = np.where(glucose_data[glucose_column] < 3.0, 1, 0)
+        TAR1 = np.where((glucose_data[glucose_column] <= 13.9) & (glucose_data[glucose_column] >= 10.0), 1, 0)
+        TAR2 = np.where(glucose_data[glucose_column] > 13.9, 1, 0)
 
-    glucose_data['Count'] = Count
-    glucose_data['TIR'] = TIR
-    glucose_data['TBR1'] = TBR1
-    glucose_data['TBR2'] = TBR2
-    glucose_data['TAR1'] = TAR1
-    glucose_data['TAR2'] = TAR2
+        glucose_data['Count'] = Count
+        glucose_data['TIR'] = TIR
+        glucose_data['TBR1'] = TBR1
+        glucose_data['TBR2'] = TBR2
+        glucose_data['TAR1'] = TAR1
+        glucose_data['TAR2'] = TAR2
 
-    columns_for_counting = ['Count', 'TIR', 'TBR1' 
+        columns_for_counting = ['Count', 'TIR', 'TBR1' 
                             ,'TBR2' 
                             ,'TAR1' 
                             ,'TAR2'
                             ]
-    range_data = glucose_data.groupby(['Timepoints'])[columns_for_counting].apply(lambda x : x.astype(int).sum())
-    range_data = range_data.iloc[:,1:].div(range_data.Count, axis=0)
+        range_data = glucose_data.groupby(['Timepoints'])[columns_for_counting].apply(lambda x : x.astype(int).sum())
+        range_data = range_data.iloc[:,1:].div(range_data.Count, axis=0)
 
-    perc_TIR = np.where(range_data['TIR'] < 0.7, 0, 1)
+        perc_TIR = np.where(range_data['TIR'] < 0.7, 0, 1)
     
-    #perc_TBR1 = np.where(range_data['TBR1'] < 0.04, 1, 0)
-    #perc_TBR2 = np.where(range_data['TBR2'] < 0.01, 1, 0)
-    perc_TBR = np.where((range_data['TBR1'] < 0.04) & (range_data['TBR2'] < 0.01), 1, 0)
+        #perc_TBR1 = np.where(range_data['TBR1'] < 0.04, 1, 0)
+        #perc_TBR2 = np.where(range_data['TBR2'] < 0.01, 1, 0)
+        perc_TBR = np.where((range_data['TBR1'] < 0.04) & (range_data['TBR2'] < 0.01), 1, 0)
 
-    #perc_TAR1 = np.where(range_data['TAR1'] < 0.25, 1, 0)
-    #perc_TAR2 = np.where(range_data['TAR2'] < 0.05, 1, 0)
-    perc_TAR = np.where((range_data['TAR1'] < 0.25) & (range_data['TAR2'] < 0.05), 1, 0)
+        #perc_TAR1 = np.where(range_data['TAR1'] < 0.25, 1, 0)
+        #perc_TAR2 = np.where(range_data['TAR2'] < 0.05, 1, 0)
+        perc_TAR = np.where((range_data['TAR1'] < 0.25) & (range_data['TAR2'] < 0.05), 1, 0)
 
-    range_data['perc_TIR'] = perc_TIR
-    #range_data['perc_TBR1'] = perc_TBR1
-    #range_data['perc_TBR2'] = perc_TBR2
-    range_data['perc_TBR'] = perc_TBR
-    #range_data['perc_TAR1'] = perc_TAR1
-    #range_data['perc_TAR2'] = perc_TAR2
-    range_data['perc_TAR'] = perc_TAR
+        range_data['perc_TIR'] = perc_TIR
+        #range_data['perc_TBR1'] = perc_TBR1
+        #range_data['perc_TBR2'] = perc_TBR2
+        range_data['perc_TBR'] = perc_TBR
+        #range_data['perc_TAR1'] = perc_TAR1
+        #range_data['perc_TAR2'] = perc_TAR2
+        range_data['perc_TAR'] = perc_TAR
 
-    range_data['Timepoints'] = range_data.index.values
+        range_data['Timepoints'] = range_data.index.values
+
+    elif type_states == 2:
+
+        glucose_data['Timepoints'] = np.arange(0, len(glucose_data))
+        first_timepoint = 0
+        
+        glucose_data = glucose_data[['Historie glucose (mmol/L)', 'Timepoints']]
+
+        state_column = np.where(glucose_data[glucose_column] < 3.0, 'TBR2', 
+                       np.where(glucose_data[glucose_column] < 4.0, 'TBR1', 
+                       np.where(glucose_data[glucose_column] < 10.1, 'TIR', 
+                       np.where(glucose_data[glucose_column] < 14, 'TAR1',
+                       'TAR2'))))
+
+        glucose_data['State1'] = state_column        
+        range_data = glucose_data.copy()
 
     first_timepoint = 0
     time_attributes = ['Timepoints']   
 
     return range_data, first_timepoint, time_attributes
 
-def states_from_ranges(range_data=None, time_attributes=None):
+def states_from_ranges(range_data=None, time_attributes=None, type_states=None):
 
-    #repeats = 5
-    repeats = 3
+    if type_states == 1:
+
+        #repeats = 5
+        repeats = 3
     
-    combinations = pd.DataFrame(list(it.product(range(2), repeat=repeats)))
-    letters_tuples = list(it.product(string.ascii_uppercase, string.ascii_uppercase))
-    letters = []
-    for tuple in letters_tuples:
-        letters.append(''.join(tuple))
+        combinations = pd.DataFrame(list(it.product(range(2), repeat=repeats)))
+        letters_tuples = list(it.product(string.ascii_uppercase, string.ascii_uppercase))
+        letters = []
 
-    columns_for_counting = ['perc_TIR'
+        for tuple in letters_tuples:
+            letters.append(''.join(tuple))
+            columns_for_counting = ['perc_TIR'
                             #,'perc_TBR1'
                             #,'perc_TBR2'
                             ,'perc_TBR'
@@ -199,19 +222,27 @@ def states_from_ranges(range_data=None, time_attributes=None):
                             ,'perc_TAR'
                             ]
 
-    states = []
-    for timepoint in np.arange(len(range_data)):
-        x = range_data.loc[timepoint, columns_for_counting].values
-        equal = (combinations == x).all(axis=1)
-        idx = equal[equal].index.values[0] 
-        state = letters[idx]
-        states.append(state)
+        states = []
+        for timepoint in np.arange(len(range_data)):
+            x = range_data.loc[timepoint, columns_for_counting].values
+            equal = (combinations == x).all(axis=1)
+            idx = equal[equal].index.values[0] 
+            state = letters[idx]
+            states.append(state)
 
-    range_data['State1'] = states
-    time_attributes.append('State1')
-    states_data = range_data.copy()
+        range_data['State1'] = states
+        time_attributes.append('State1')
+        states_data = range_data.copy()
 
-    return states_data, time_attributes
+        combinations.columns = columns_for_counting
+    
+    elif type_states == 2:
+
+        time_attributes.append('State1')
+        states_data = range_data.copy()
+        combinations = pd.DataFrame()
+
+    return states_data, combinations
 
 def create_two_time_columns(states_data=None, first_timepoint=None, time_attributes=None):
 

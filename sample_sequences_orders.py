@@ -58,9 +58,9 @@ def sample_extra_timepoints(df_sg=None, probs=None, N=None, order=None, states=N
         # sample first timepoint from pi
         first_timepoints = np.random.choice(a=states, size=N, p=probs['probs_0'].values.flatten())
         df_first_timepoints = pd.DataFrame(first_timepoints, columns=['s0'])
-        name_A = 'probs_' + str(1)
-
+        
         # get probs of interest
+        name_A = 'probs_' + str(1)
         probs = probs[name_A]
         probs_norm = probs / np.repeat(probs.sum(axis=1).values, S).reshape(S**(order+1), S)
 

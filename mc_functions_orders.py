@@ -24,34 +24,37 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
         score = np.nan
         llsg = np.nan
         sg_order = 1
-        return qm, score, llsg, sg_order
+
+        return qm, np.nan, np.nan, 1
+
+    elif quality_measure == 'phiwrl':
+        
+        llsg, llsg_list = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs1_alltimepoints'], initial_freqs=subgroup_params['initial_freqs'], 
+                                                   ll_list=None, order=1, s=len(general_params['states']), print_this=print_this)
+        qm = np.abs(subgroup_params['sg_size']['seq_plus_transitions'] * (((2*general_params['lld']) / general_params['data_size']['seq_plus_transitions']) - \
+                                                                          ((2*llsg) / subgroup_params['sg_size']['seq_plus_transitions'])))
+        return qm, np.nan, llsg, 1
 
     else:
 
         score, llsg, sg_order = calculate_best_fitting_order(probs=subgroup_params['probs'], freqs=subgroup_params['freqs'], initial_freqs=subgroup_params['initial_freqs'],
                                                              start_at_order=start_at_order, s=len(general_params['states']), print_this=print_this,
                                                              quality_measure=quality_measure, data_size=subgroup_params['sg_size'])
-        
-        if quality_measure == 'phiwarl':
-            qm = np.abs(subgroup_params['sg_size']['seq_plus_transitions'] * (score - (2*general_params['lld'] / general_params['data_size']['seq_plus_transitions'])))
-            return qm, score, llsg, sg_order
-
-        else:
-            # calculate reference likelihood
-            refll, refscore = calculate_reference_score(ref=ref, general_params=general_params, subgroup_params=subgroup_params, 
-                                                        quality_measure=quality_measure, print_this=print_this)
+        # calculate reference likelihood
+        refll, refscore = calculate_reference_score(ref=ref, general_params=general_params, subgroup_params=subgroup_params, 
+                                                    quality_measure=quality_measure, print_this=print_this)
                
-            if print_this:
-                print('reference')
-                print(refll)
-                print(refscore)
+        if print_this:
+            print('reference')
+            print(refll)
+            print(refscore)
 
-            if ref in ['dataset', 'complement']:
-                qm = score - refscore
-            elif ref == 'addition':
-                qm = score + refscore        
+        if ref in ['dataset', 'complement']:
+            qm = score - refscore
+        elif ref == 'addition':
+            qm = score + refscore        
 
-            return qm, score, llsg, sg_order
+        return qm, score, llsg, sg_order
 
 def calculate_reference_score(ref=None, general_params=None, subgroup_params=None, quality_measure=None, print_this=None):
 
@@ -150,8 +153,8 @@ def calculate_score(ll=None, quality_measure=None, order=None, s=None, data_size
                 print(penalty2)
                 print(score)
 
-    elif quality_measure == 'phiwarl':
-        score = (2*ll) / size
+    elif quality_measure == 'phiwrl':
+        score = np.nan
 
     elif quality_measure in ['deltatv', 'omegatv']:
         score = np.nan

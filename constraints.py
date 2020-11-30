@@ -31,9 +31,17 @@ def redundant_subgroup_coverage(level=None, seed=None, idx_sg_new=None):
     if level == 1:
         return True
     
-    if len(seed['qualities']['idx_sg']) == len(idx_sg_new):
-        if seed['qualities']['idx_sg'] == idx_sg_new:
+    if len(seed['qualities']['idx_sg']) >= len(idx_sg_new):
+        overlap = [item in idx_sg_new for item in seed['qualities']['idx_sg']]
+        perc_overlap = sum(overlap) / len(seed['qualities']['idx_sg'])
+        #if perc_overlap != 1.0:
+            #print(perc_overlap)
+        #if seed['qualities']['idx_sg'] == idx_sg_new:
+        if perc_overlap > 0.99:
+            #print('yes')
             return False
+        else: 
+            return True
     else:
         return True
 

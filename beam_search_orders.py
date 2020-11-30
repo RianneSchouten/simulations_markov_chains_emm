@@ -3,9 +3,9 @@ import pandas as pd
 
 import dataset as dt
 import refinements as rf
-import qualities_orders as qmo
 import constraints as cs
 import summaries_orders as suo
+import qualities_orders as qmo
 
 def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=None, quality_measure=None, 
                 w=None, d=None, q=None, Z=None, ref=None, start_at_order=None,
@@ -24,7 +24,6 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     # Calculate general parameters
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, quality_measure=quality_measure)
-    #print(general_params)
 
     candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -43,14 +42,14 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         n_small_groups = 0
         n_redundant_coverage = 0
         
-        #print('level:', d_i)
+        print('level:', d_i)
 
         cq_satisfied = []
         for seed in candidate_queue:
 
             subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=seed['description'], df=df, 
-                                                  bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
-                                                  dt_atts=dt_atts)
+                                                                             bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
+                                                                             dt_atts=dt_atts)
             if d_i == 1:
                 seed_set = []
                 seed_set.append(seed)
@@ -59,6 +58,8 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                                           num_atts=num_atts, dt_atts=dt_atts, nr_quantiles=nr_quantiles)
 
             for desc in seed_set:
+
+                #print(desc['description'])
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:
@@ -72,8 +73,8 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                     n_redundant_descs += 1
                 else:
                     subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=desc['description'], df=df,
-                                                          bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
-                                                          dt_atts=dt_atts)
+                                                                                     bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
+                                                                                     dt_atts=dt_atts)
                     
                     constraint_check_size = cs.constraint_subgroup_size(subgroup=subgroup, attributes=attributes, general_params=general_params)
                     
@@ -81,7 +82,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                         n_small_groups += 1
                     else:
                         redundancy_check_coverage = cs.redundant_subgroup_coverage(level=d_i, seed=seed, idx_sg_new=idx_sg)
-                    
+
                         if not redundancy_check_coverage:
                             n_redundant_coverage += 1
                         else:                        
@@ -103,7 +104,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
         result_set, candidate_queue = suo.prepare_resultlist_cq(result_set=result_set, cq_satisfied=cq_satisfied, 
                                                                quality_measure=quality_measure, q=q, w=w)
-        #print(candidate_queue)
+        print(len(candidate_queue))
     
     # result set is a dictionary
     # result emm is a dataframe with the descriptive attributes on the columns, and q*2 rows

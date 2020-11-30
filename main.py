@@ -55,12 +55,12 @@ def main(subgroup_orders=None,
 if __name__ == '__main__':
 
     # main analysis
-    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
-         quality_measures=['phiwd'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwarl'],
+    main(nr_quantiles=8, subgroup_orders = [0],
+         quality_measures=['phiwrl'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
          w=25, d=3, q=20, refs=['dataset'],  
-         start_at_order=4, save_location='./data_output/experiment_higherorders',
-         nreps=10, seed=20201125, ncovs=[20, 10, 5],
-         N=[100], T=[200, 50, 10], S=[10, 5, 2])
+         start_at_order=1, save_location='./data_output/experiment_higherorders',
+         nreps=10, seed=20201126, ncovs=[20, 10, 5],
+         N=[100, 500, 1000], T=[10, 5, 2], S=[10, 5, 2])
 
     '''
     # run this to test the difference between different references
