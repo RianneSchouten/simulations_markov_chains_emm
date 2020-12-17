@@ -59,7 +59,8 @@ def analysis_rw_dataset(dataset=None, calculate_distributions=None, attributes=N
 
 def load(name_dataset=None):
 
-    location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
+    #location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
+    location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
     sheets = pd.read_excel(location, sheet_name=['data', 'df_attributes', 'combinations'])
 
     data = sheets['data']

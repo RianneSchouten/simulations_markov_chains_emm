@@ -42,7 +42,9 @@ def read_data(dataset=None, attributes=None):
             dt_atts.append(col)
             #df[col] = df[col].dt.date
     
-    return df, cols, bin_atts, nom_atts, num_atts, dt_atts
+    idx = df.index.values
+
+    return df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx
 
 def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None, dt_atts=None):
 

@@ -26,19 +26,18 @@ def constraint_subgroup_size(subgroup=None, attributes=None, general_params=None
 
     return constraint_check
 
-def redundant_subgroup_coverage(level=None, seed=None, idx_sg_new=None):
+def redundant_subgroup_coverage(level=None, idx_sg_old=None, idx_sg_new=None):
 
+    '''
     if level == 1:
         return True
-    
-    if len(seed['qualities']['idx_sg']) >= len(idx_sg_new):
-        overlap = [item in idx_sg_new for item in seed['qualities']['idx_sg']]
-        perc_overlap = sum(overlap) / len(seed['qualities']['idx_sg'])
-        #if perc_overlap != 1.0:
-            #print(perc_overlap)
-        #if seed['qualities']['idx_sg'] == idx_sg_new:
-        if perc_overlap > 0.99:
-            #print('yes')
+    '''
+    if len(idx_sg_old) >= len(idx_sg_new):
+        #overlap = [item in idx_sg_new for item in idx_sg_old] # this is not necessary beacuse idx_sg_new is always a subset of idx_sg_old because of the way the refinements are set up
+        perc_overlap = len(idx_sg_new) / len(idx_sg_old)
+
+        if perc_overlap > 0.9:
+            print('constraint op redundant subgroup coverage')
             return False
         else: 
             return True

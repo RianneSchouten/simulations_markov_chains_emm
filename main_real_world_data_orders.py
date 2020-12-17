@@ -36,10 +36,11 @@ def main(name_dataset=None, calculate_distributions=None, nr_quantiles=None, qua
 
 if __name__ == '__main__':
 
-    main(name_dataset='TIRpatientendata_1',  
-         calculate_distributions=True,
-         nr_quantiles=8, quality_measures=['phiaic'],
-         w=25, d=3, q=20, m=100, Z=2.58, seed=20201129,
+    main(#name_dataset='TIRpatientendata_1',  
+         name_dataset='studyportals',
+         calculate_distributions=False,
+         nr_quantiles=4, quality_measures=['phiaic'],
+         w=15, d=3, q=10, m=2, Z=0.01, seed=20201214,
          ref='dataset', start_at_order=4,
          save_location='./data_output/')
 

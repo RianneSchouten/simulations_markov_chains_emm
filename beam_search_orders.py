@@ -11,7 +11,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                 w=None, d=None, q=None, Z=None, ref=None, start_at_order=None,
                 save_location=None):
 
-    df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, attributes=attributes)
+    df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
@@ -24,6 +24,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     # Calculate general parameters
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, quality_measure=quality_measure)
+    #print(general_params)
 
     candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -59,7 +60,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
             for desc in seed_set:
 
-                #print(desc['description'])
+                print(desc['description'])
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:
@@ -81,7 +82,11 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                     if not constraint_check_size:
                         n_small_groups += 1
                     else:
-                        redundancy_check_coverage = cs.redundant_subgroup_coverage(level=d_i, seed=seed, idx_sg_new=idx_sg)
+                        if d_i == 1:
+                            idx_sg_old = idx
+                        else:
+                            idx_sg_old = seed['qualities']['idx_sg']
+                        redundancy_check_coverage = cs.redundant_subgroup_coverage(level=d_i, idx_sg_old=idx_sg_old, idx_sg_new=idx_sg)
 
                         if not redundancy_check_coverage:
                             n_redundant_coverage += 1
@@ -95,7 +100,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                             # do heuristic search process for initial probs and for higher order
                             desc_qm = qmo.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
                                                  subgroup_params=subgroup_params, quality_measure=quality_measure, 
-                                                 ref=ref, start_at_order=start_at_order, print_this=print_this)
+                                                 ref=ref, start_at_order=subgroup_params['new_order'], print_this=False)
 
                             cq_satisfied.append(desc_qm)                 
 
@@ -104,7 +109,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
         result_set, candidate_queue = suo.prepare_resultlist_cq(result_set=result_set, cq_satisfied=cq_satisfied, 
                                                                quality_measure=quality_measure, q=q, w=w)
-        print(len(candidate_queue))
+        #print(len(candidate_queue))
     
     # result set is a dictionary
     # result emm is a dataframe with the descriptive attributes on the columns, and q*2 rows

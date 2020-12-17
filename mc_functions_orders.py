@@ -7,7 +7,8 @@ def calculate_quality_values(general_params=None, subgroup_params=None, quality_
 
     qm, score, llsg, sg_order = search_quality_values(general_params=general_params, subgroup_params=subgroup_params, print_this=print_this,
                                                       quality_measure=quality_measure, ref=ref, start_at_order=start_at_order)
-
+    #print(qm)
+    
     quality_values[quality_measure] = np.round(qm, 2)
     quality_values['best_order'] = sg_order
     quality_values['llsg'] = np.round(llsg, 2)
@@ -46,6 +47,7 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
                
         if print_this:
             print('reference')
+            print(start_at_order)
             print(refll)
             print(refscore)
 
