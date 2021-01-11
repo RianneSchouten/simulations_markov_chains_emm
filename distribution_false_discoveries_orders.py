@@ -6,17 +6,20 @@ import beam_search_orders as bso
 import emm_rw_dataset_orders as rwdto
 from joblib import Parallel, delayed
 
-def parallelization_over_iterations(m=None, dataset=None, attributes=None, nr_quantiles=None, quality_measure=None, w=None, d=None, ref=None, start_at_order=None):
+def parallelization_over_iterations(m=None, dataset=None, attributes=None, nr_quantiles=None, quality_measure=None, w=None, d=None, ref=None, start_at_order=None,
+                                    stop_at_order=None, constraint_subgroup_coverage=None, constraint_subgroup_size=None):
 
     inputs = range(m)
     print('iterations...')
 
-    qm_values = Parallel(n_jobs=-2)(delayed(build_distribution)(i, dataset, attributes, nr_quantiles, quality_measure, w, d, ref, start_at_order) 
+    qm_values = Parallel(n_jobs=-2)(delayed(build_distribution)(i, dataset, attributes, nr_quantiles, quality_measure, w, d, ref, start_at_order, stop_at_order,
+                                                                constraint_subgroup_coverage, constraint_subgroup_size) 
                                             for i in inputs)
 
     return qm_values
 
-def build_distribution(i=None, dataset=None, attributes=None, nr_quantiles=None, quality_measure=None, w=None, d=None, ref=None, start_at_order=None):
+def build_distribution(i=None, dataset=None, attributes=None, nr_quantiles=None, quality_measure=None, w=None, d=None, ref=None, 
+                       start_at_order=None, stop_at_order=None, constraint_subgroup_coverage=None, constraint_subgroup_size=None):
 
     print(i)
 
@@ -25,7 +28,8 @@ def build_distribution(i=None, dataset=None, attributes=None, nr_quantiles=None,
     # perform beam search
     result_emm, considered_subgroups, general_params = bso.beam_search(dataset=shuffled_dataset, distribution=None, attributes=attributes,
                                                                        nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=1,
-                                                                       ref=ref, start_at_order=start_at_order)
+                                                                       ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order,
+                                                                       constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size)
 
     # save qm of the first subgroup
     qm_value = result_emm.loc[result_emm.sg == 0, quality_measure].values[1] # 1 is qualities

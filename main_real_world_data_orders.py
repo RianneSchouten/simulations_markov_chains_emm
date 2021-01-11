@@ -3,9 +3,11 @@ import pandas as pd
 import dataset as dt
 import emm_rw_dataset_orders as rwdto
 
-def main(name_dataset=None, calculate_distributions=None, nr_quantiles=None, quality_measures=None, 
+def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
+         nr_quantiles=None, quality_measures=None, 
          w=None, d=None, q=None, m=None, Z=None, seed=None, 
-         ref=None, start_at_order=None, save_location=None):
+         constraint_subgroup_size=None, constraint_subgroup_coverage=None,
+         ref=None, start_at_order=None, stop_at_order=None, save_location=None):
          
     data, attributes, combinations = rwdto.load(name_dataset=name_dataset)  
 
@@ -17,12 +19,15 @@ def main(name_dataset=None, calculate_distributions=None, nr_quantiles=None, qua
     if save_location is not None:
         save_location_total = save_location + name_dataset + '_' + str(seed)
      
-    result_rw_analysis, considered_subgroups, general_params = rwdto.analysis_rw_dataset(dataset=data, calculate_distributions=calculate_distributions, attributes=attributes, 
-                                                  nr_quantiles=nr_quantiles, quality_measures=quality_measures, w=w, d=d, q=q, m=m, Z=Z,
-                                                  ref=ref, start_at_order=start_at_order, save_location=save_location_total)
+    result_rw_analysis, considered_subgroups, general_params = rwdto.analysis_rw_dataset(dataset=data, calculate_distribution=calculate_distribution,
+                                                                                         use_distribution=use_distribution, attributes=attributes, 
+                                                                                         nr_quantiles=nr_quantiles, quality_measures=quality_measures, w=w, d=d, q=q, m=m, Z=Z,
+                                                                                         constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
+                                                                                         ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order, 
+                                                                                         save_location=save_location_total)
 
     # save
-    rw_analysis_info = pd.DataFrame({'m': [m], 'nr_quantiles': [nr_quantiles], 'w': [w], 'd': [d], 'q': [q], 'Z': [Z]})
+    rw_analysis_info = pd.DataFrame({'m': [m], 'nr_quantiles': [nr_quantiles], 'w': [w], 'd': [d], 'q': [q], 'Z': [Z], 'use_distribution': [use_distribution]})
     general_params_pd = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in general_params.items() ]))
     dfs = {'result_rw_analysis': result_rw_analysis, 'rw_analysis_info': rw_analysis_info, 'considered_subgroups': pd.DataFrame(considered_subgroups), 'general_params_pd': general_params_pd}
 
@@ -35,11 +40,13 @@ def main(name_dataset=None, calculate_distributions=None, nr_quantiles=None, qua
 
 if __name__ == '__main__':
 
-    main(#name_dataset='TIRpatientendata_1',  
-         name_dataset='studyportals',
-         calculate_distributions=False,
-         nr_quantiles=4, quality_measures=['phiaic'],
-         w=15, d=3, q=10, m=2, Z=0.01, seed=20201214,
+    main(name_dataset='TIRpatientendata_2',  
+         #name_dataset='studyportals',
+         calculate_distribution=False, use_distribution=False,
+         nr_quantiles=4, quality_measures=['omegatv'],
+         w=15, d=1, q=15, m=2, Z=0.01, seed=20210111,
          ref='dataset', start_at_order=4,
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         stop_at_order=1,
          save_location='./data_output/')
 

@@ -4,7 +4,7 @@ import itertools as it
 
 import mc_functions_orders as fo
 
-def params_markov_chain_general(df=None, attributes=None, order=None, start_at_order=None, data_size=None, quality_measure=None):
+def params_markov_chain_general(df=None, attributes=None, order=None, start_at_order=None, stop_at_order=None, data_size=None, quality_measure=None):
 
     # the first time attribute is the counter or time index, the second and third are the two time points for a 1st order chain
     time_attributes = attributes['time_attributes']
@@ -20,30 +20,32 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     # and from line 89 in experiment_orders 
     #order = start_at_order
 
-    # calculate the frequency matrix
+    ## determine order of entire data set
     freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                                               id_attribute=attributes['id_attribute'], order=order, col_list=col_list, empty_dfs=empty_dfs)
+                                                               id_attribute=attributes['id_attribute'], order=start_at_order, col_list=col_list, empty_dfs=empty_dfs)
+    initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                         id_attribute=attributes['id_attribute'], order=new_order, col_list=col_list, empty_dfs=empty_dfs)
+    probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
+    if quality_measure in ['deltatv', 'omegatv', 'phiwrl', 'phiwd']:
+        # use phiaic
+        score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=new_order, 
+                                                                  stop_at_order=stop_at_order, s=len(states), quality_measure='phiaic', data_size=data_size)
+    else:
+        score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=new_order, 
+                                                                  stop_at_order=stop_at_order, s=len(states), quality_measure=quality_measure, data_size=data_size)
+
+    print(found_order)
+    # calculate the parameters with the true order
+    freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                                               id_attribute=attributes['id_attribute'], order=found_order, col_list=col_list, empty_dfs=empty_dfs)
     
     # calculate the frequency matrices for the first k timepoints
     initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                         id_attribute=attributes['id_attribute'], order=new_order, col_list=col_list, empty_dfs=empty_dfs)
+                                         id_attribute=attributes['id_attribute'], order=found_order, col_list=col_list, empty_dfs=empty_dfs)
     
     # calculate the probability transition matrices by normalizing the frequency matrices
-    probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
+    probs = calculate_model_probs(freqs=freqs, s=len(states), order=found_order)
     
-    # calculate the likelihood fit of the entire data plus the order of the markov chain using bic or aic
-    # this function can be used to check the order of the dataset
-    #score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=order, 
-    #                                                         s=len(states), quality_measure=quality_measure, data_size=data_size)
-    # instead, we calculate the lld and score given an order of 1
-    lld, lld_list = fo.calculate_log_likelihood(probs=probs, freqs=freqs, initial_freqs=initial_freqs, ll_list=None, order=order, s=len(states), print_this=False)
-    score = fo.calculate_score(ll=lld, quality_measure=quality_measure, order=order, s=len(states), data_size=data_size, print_this=False)
-    found_order = np.nan
-    
-    #print(found_order)
-    #print(score)
-    #print(lld)
-
     params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'empty_dfs': empty_dfs, 'col_list': col_list, 
               'score': score, 'lld': lld, 'found_order': found_order, 'states': states}
 
@@ -57,24 +59,24 @@ def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_par
    
     if quality_measure in ['deltatv', 'omegatv', 'phiwrl']:
 
-        freqs1_alltimepoints, df_alltimepoints, new_order = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], 
-                                                                                      first_timepoint=first_timepoint, id_attribute=attributes['id_attribute'], order=1, 
-                                                                                      col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+        # we use the same model as fitted for the entire dataset
+        freqs, sg_additions, new_order = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], 
+                                                                   first_timepoint=first_timepoint, id_attribute=attributes['id_attribute'], order=general_params['found_order'], 
+                                                                   col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
-        initial_freqs = initial_count_matrix(df=df_alltimepoints, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                             id_attribute=attributes['id_attribute'], order=1, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+        initial_freqs = initial_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
+                                             id_attribute=attributes['id_attribute'], order=general_params['found_order'], col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
-        probs1_alltimepoints = calculate_model_probs(freqs=freqs1_alltimepoints, s=len(general_params['states']), order=1)
-        params.update({'freqs1_alltimepoints': freqs1_alltimepoints, 'probs1_alltimepoints': probs1_alltimepoints, 
-                       'freqs': freqs1_alltimepoints, 'initial_freqs': initial_freqs, 'probs': probs1_alltimepoints, 'new_order': new_order})
+        probs = calculate_model_probs(freqs=freqs, s=len(general_params['states']), order=general_params['found_order'])
+        params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'new_order': new_order})
 
     else:
 
         freqs, sg_additions, new_order = higher_order_count_matrix(df=subgroup, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                                    id_attribute=attributes['id_attribute'], order=start_at_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+                                                                   id_attribute=attributes['id_attribute'], order=start_at_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
         initial_freqs = initial_count_matrix(df=sg_additions, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                         id_attribute=attributes['id_attribute'], order=new_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
+                                             id_attribute=attributes['id_attribute'], order=new_order, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
         probs = calculate_model_probs(freqs=freqs, s=len(general_params['states']), order=new_order)
         params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'new_order': new_order})

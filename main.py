@@ -35,15 +35,16 @@ if __name__ == '__main__':
 def main(subgroup_orders=None,
          nr_quantiles=None, quality_measures=None, 
          w=10, d=5, q=50, refs=None, start_at_order=None,
-         save_location=None,
+         save_location=None, stop_at_order=None,
+         constraint_subgroup_size=None, constraint_subgroup_coverage=None,
          nreps=None, seed=None, ncovs=None,
          N=None, T=None, S=None):
 
     result_experiment = exo.experiment(nreps=nreps, seed=seed, ncovs=ncovs, N=N, T=T, S=S, 
                                        subgroup_orders=subgroup_orders, refs=refs,
                                        nr_quantiles=nr_quantiles, quality_measures=quality_measures, 
-                                       w=w, d=d, q=q, start_at_order=start_at_order,
-                                       save_location=save_location)
+                                       w=w, d=d, q=q, start_at_order=start_at_order, stop_at_order=stop_at_order,
+                                       constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9, save_location=save_location)
 
     
     if save_location is not None:
@@ -58,8 +59,9 @@ if __name__ == '__main__':
     # main analysis
     main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
-         w=25, d=3, q=20, refs=['dataset'],  
+         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
          start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          nreps=10, seed=20210110, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
     '''
@@ -69,10 +71,11 @@ if __name__ == '__main__':
     # this reference also turns out to work best
     # it is conceptually also the strongest reference
     main(nr_quantiles=8, subgroup_orders = [1, 3],
-         quality_measures=['phibic'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwarl'],
+         quality_measures=['phibic'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
          w=25, d=3, q=20, refs=['dataset', 'complement', 'addition'], 
          start_at_order=4, save_location='./data_output/experiment_reference',
-         nreps=10, seed=20201117, ncovs=[5],
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         nreps=10, seed=20201117, ncovs=[5], stop_at_order=1,
          N=[200], T=[50], S=[10])
     '''
     
@@ -80,11 +83,12 @@ if __name__ == '__main__':
     # turns out that either order = 1 or order = 0 is chosen
     # order = 0 is chosen when the likelihood increases so much between order 1 and 0 
     # that the parameter penalty cannot correct for it
-    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
-         quality_measures=['phibic', 'phiaic'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwarl'],
-         w=25, d=3, q=20, start_at_order=4, refs=['dataset'],
+    main(nr_quantiles=8, subgroup_orders = [1,3],
+         quality_measures=['omegatv'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
+         w=25, d=3, q=20, start_at_order=4, stop_at_order=1, refs=['dataset'],
          save_location='./data_output/experiment_true_order_dataset',
-         nreps=1, seed=20201117, ncovs=[5],
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         nreps=1, seed=20210111, ncovs=[5],
          N=[100], T=[50], S=[10])
     
 
