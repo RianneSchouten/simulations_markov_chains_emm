@@ -3,8 +3,6 @@ import pandas as pd
 import itertools as it
 import string
 
-import fomc_functions as fomcf
-
 def define_attributes(dataset=None, time_attributes=None):
 
     cols = dataset.columns.values.tolist()

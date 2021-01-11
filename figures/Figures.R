@@ -5,177 +5,179 @@ library(RColorBrewer)
 library(mice)
 
 setwd("C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/figures/")
-#data <- read_excel("../data_output/experiment_initialprobs_20200608_10nreps_[100, 1000]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25].xlsx")
 
-### first type of simulations
-data <- read_excel("../data_output/experiment_initialprobs_20200102_25nreps_[100]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25]_5.xlsx")
-head(data)
-names(data)
+# #### Simulation results and figures for work in progress paper september 2020 ####
+# #data <- read_excel("../data_output/experiment_initialprobs_20200608_10nreps_[100, 1000]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25].xlsx")
+# 
+# ### first type of simulations
+# data <- read_excel("../data_output/experiment_initialprobs_20200102_25nreps_[100]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25]_5.xlsx")
+# head(data)
+# names(data)
+# 
+# long_data <- data %>%
+#   rename(delta_tv = deltatv,
+#          omega_tv = omegatv,
+#          phi_wd = phiwd, 
+#          phi_kl = phikl,
+#          #phi_bic = phibic, 
+#          phi_arl = phiarl, 
+#          phi_warl = phiwarl) %>%
+#   pivot_longer(
+#     cols = c('delta_tv', 'omega_tv', 'phi_wd', 'phi_kl', 'phi_arl', 'phi_warl'),
+#     names_to = "measure",
+#     values_to = "Rank") %>%
+#   mutate(facet = case_when(distAyn == 0 & distPiyn == 0 ~ 'No difference',
+#                            distAyn == 1 & distPiyn == 0 ~ 'Difference in transition matrix A',
+#                            distAyn == 0 & distPiyn == 1 ~ 'Difference in initial probabilities pi',
+#                            distAyn == 1 & distPiyn == 1 ~ 'Difference in both A and pi')) %>%
+#   mutate(facet = factor(facet, levels = c('No difference', 'Difference in transition matrix A', 
+#                                           'Difference in initial probabilities pi', 'Difference in both A and pi'))) %>%
+#   mutate(measure = factor(measure, levels = c('phi_warl', 'phi_arl', 'phi_kl', 
+#                                               'phi_wd', 'omega_tv', 'delta_tv')))
+# 
+# # plot 1
+# 
+# plot_data <- long_data %>%
+#   filter(N == 100) %>%
+#   filter(T == 25) %>%
+#   filter(S == 25)
+# 
+# plot1 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+#   geom_boxplot(aes(fill = as.factor(ncovs))) +
+#   coord_flip() + 
+#   facet_wrap(facet~., ncol = 2) +
+#   labs(title = 'Ranks of the true subgroup',
+#        fill = 'ncovs') +
+#   guides(fill = guide_legend(direction = "horizontal")) +
+#   theme(legend.position="top",
+#         legend.justification="right",
+#         plot.title = element_text(vjust=-4), 
+#         legend.box.margin = margin(-1,0,0,0, "line"),
+#         axis.title.y = element_blank(),
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank())
+#   
+# plot1
+# ggsave("plot_100_25_25.eps", width = 20, height = 20, units = "cm")
+# 
+# # plot 2
+# plot_data <- long_data %>%
+#   filter(N == 100) %>%
+#   filter(T == 5) %>%
+#   filter(S == 5) %>%
+#   filter((distAyn == 0 & distPiyn == 1)|(distAyn == 1 & distPiyn == 0))
+# 
+# plot2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+#   geom_boxplot(aes(fill = as.factor(ncovs))) +
+#   coord_flip() + 
+#   facet_wrap(facet~., ncol = 2) +
+#   labs(title = 'Ranks of the true subgroup',
+#        fill = 'ncovs') +
+#   guides(fill = guide_legend(direction = "horizontal")) +
+#   theme(legend.position="top",
+#         legend.justification="right",
+#         plot.title = element_text(vjust=-4), 
+#         legend.box.margin = margin(-1,0,0,0, "line"),
+#         axis.title.y = element_blank(),
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank()
+#   )
+# 
+# plot2
+# ggsave("plot_100_5_5.eps", width = 20, height = 11, units = "cm")
+# 
+# plot_data <- long_data %>%
+#   filter(N == 100) %>%
+#   filter(T == 25) %>%
+#   filter(S == 5)
+# 
+# plot2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+#   geom_boxplot(aes(fill = as.factor(ncovs))) +
+#   coord_flip() + 
+#   facet_wrap(facet~., ncol = 2) +
+#   labs(title = 'Ranks of the true subgroup',
+#        fill = 'ncovs') +
+#   guides(fill = guide_legend(direction = "horizontal")) +
+#   theme(legend.position="top",
+#         legend.justification="right",
+#         plot.title = element_text(vjust=-4), 
+#         legend.box.margin = margin(-1,0,0,0, "line"),
+#         axis.title.y = element_blank(),
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank()
+#   )
+# 
+# plot2
+# 
+# ## presentation
+# plot_data <- long_data %>%
+#   filter(N == 100) %>%
+#   filter(T == 5) %>%
+#   filter(S == 5) %>%
+#   filter((distAyn == 0 & distPiyn == 1))
+# 
+# plot_for_presentation_1 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+#   geom_boxplot(aes(fill = as.factor(ncovs))) +
+#   coord_flip() + 
+#   facet_wrap(facet~., ncol = 2) +
+#   labs(title = 'Difference in initial probabilities',
+#        fill = 'ncovs') +
+#   guides(fill = guide_legend(direction = "horizontal")) +
+#   theme(legend.position="top",
+#         legend.justification="right",
+#         plot.title = element_text(vjust=-4), 
+#         legend.box.margin = margin(-1,0,0,0, "line"),
+#         axis.title.y = element_blank(),
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank())
+# 
+# plot_for_presentation_1
+# ggsave("plot_100_5_5_pi.eps", width = 16, height = 20, units = "cm")
+# 
+# plot_data <- long_data %>%
+#   filter(N == 100) %>%
+#   filter(T == 25) %>%
+#   filter(S == 25) %>%
+#   filter((distAyn == 1 & distPiyn == 0))
+# 
+# plot_for_presentation_2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
+#   geom_boxplot(aes(fill = as.factor(ncovs))) +
+#   coord_flip() + 
+#   facet_wrap(facet~., ncol = 2) +
+#   labs(title = 'Difference in transition matrix',
+#        fill = 'ncovs') +
+#   guides(fill = guide_legend(direction = "horizontal")) +
+#   theme(legend.position="top",
+#         legend.justification="right",
+#         plot.title = element_text(vjust=-4), 
+#         legend.box.margin = margin(-1,0,0,0, "line"),
+#         axis.title.y = element_blank(),
+#         panel.grid.major.x = element_blank(),
+#         panel.grid.minor.x = element_blank())
+# 
+# plot_for_presentation_2
+# ggsave("plot_100_25_25_Aboth.eps", width = 16, height = 20, units = "cm")
 
-long_data <- data %>%
-  rename(delta_tv = deltatv,
-         omega_tv = omegatv,
-         phi_wd = phiwd, 
-         phi_kl = phikl,
-         #phi_bic = phibic, 
-         phi_arl = phiarl, 
-         phi_warl = phiwarl) %>%
-  pivot_longer(
-    cols = c('delta_tv', 'omega_tv', 'phi_wd', 'phi_kl', 'phi_arl', 'phi_warl'),
-    names_to = "measure",
-    values_to = "Rank") %>%
-  mutate(facet = case_when(distAyn == 0 & distPiyn == 0 ~ 'No difference',
-                           distAyn == 1 & distPiyn == 0 ~ 'Difference in transition matrix A',
-                           distAyn == 0 & distPiyn == 1 ~ 'Difference in initial probabilities pi',
-                           distAyn == 1 & distPiyn == 1 ~ 'Difference in both A and pi')) %>%
-  mutate(facet = factor(facet, levels = c('No difference', 'Difference in transition matrix A', 
-                                          'Difference in initial probabilities pi', 'Difference in both A and pi'))) %>%
-  mutate(measure = factor(measure, levels = c('phi_warl', 'phi_arl', 'phi_kl', 
-                                              'phi_wd', 'omega_tv', 'delta_tv')))
+#### Simulation results and figures for firstpaperdraft december 2020 ####
 
-# plot 1
-
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(T == 25) %>%
-  filter(S == 25)
-
-plot1 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
-  geom_boxplot(aes(fill = as.factor(ncovs))) +
-  coord_flip() + 
-  facet_wrap(facet~., ncol = 2) +
-  labs(title = 'Ranks of the true subgroup',
-       fill = 'ncovs') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        axis.title.y = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
-  
-plot1
-ggsave("plot_100_25_25.eps", width = 20, height = 20, units = "cm")
-
-# plot 2
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(T == 5) %>%
-  filter(S == 5) %>%
-  filter((distAyn == 0 & distPiyn == 1)|(distAyn == 1 & distPiyn == 0))
-
-plot2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
-  geom_boxplot(aes(fill = as.factor(ncovs))) +
-  coord_flip() + 
-  facet_wrap(facet~., ncol = 2) +
-  labs(title = 'Ranks of the true subgroup',
-       fill = 'ncovs') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        axis.title.y = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank()
-  )
-
-plot2
-ggsave("plot_100_5_5.eps", width = 20, height = 11, units = "cm")
-
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(T == 25) %>%
-  filter(S == 5)
-
-plot2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
-  geom_boxplot(aes(fill = as.factor(ncovs))) +
-  coord_flip() + 
-  facet_wrap(facet~., ncol = 2) +
-  labs(title = 'Ranks of the true subgroup',
-       fill = 'ncovs') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        axis.title.y = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank()
-  )
-
-plot2
-
-## presentation
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(T == 5) %>%
-  filter(S == 5) %>%
-  filter((distAyn == 0 & distPiyn == 1))
-
-plot_for_presentation_1 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
-  geom_boxplot(aes(fill = as.factor(ncovs))) +
-  coord_flip() + 
-  facet_wrap(facet~., ncol = 2) +
-  labs(title = 'Difference in initial probabilities',
-       fill = 'ncovs') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        axis.title.y = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
-
-plot_for_presentation_1
-ggsave("plot_100_5_5_pi.eps", width = 16, height = 20, units = "cm")
-
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(T == 25) %>%
-  filter(S == 25) %>%
-  filter((distAyn == 1 & distPiyn == 0))
-
-plot_for_presentation_2 <- ggplot(plot_data, aes(y = Rank, x = measure)) +
-  geom_boxplot(aes(fill = as.factor(ncovs))) +
-  coord_flip() + 
-  facet_wrap(facet~., ncol = 2) +
-  labs(title = 'Difference in transition matrix',
-       fill = 'ncovs') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        axis.title.y = element_blank(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank())
-
-plot_for_presentation_2
-ggsave("plot_100_25_25_Aboth.eps", width = 16, height = 20, units = "cm")
-
-### Second type of simulations
-# first set with start at order = 4 and multiple orders at 13 11
-data <- read_excel("../data_output/experiment_higherorders_20201113_25nreps_[100]_[50, 25, 10]_[10, 5]_[20, 10, 5].xlsx")
+# first set with start at start_at_order = 4 and multiple orders on 13-11
+data <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201113_25nreps_[100]_[50, 25, 10]_[10, 5]_[20, 10, 5].xlsx")
 # at 11 11, order 0 and 1 with start at order = 1
-#data <- read_excel("../data_output/experiment_higherorders_20201111_25nreps_[100]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25].xlsx")
+#data <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201111_25nreps_[100]_[2, 5, 25]_[2, 5, 25]_[2, 5, 25].xlsx")
 # here, we compare with the complement and find out we should increase the dimensions
-#data <- read_excel("../data_output/experiment_higherorders_20201117_10nreps_[100, 500]_[50, 200]_[2, 5, 10]_[20].xlsx")
-# we add a setting for states = 2 to the experiment at 13 11
-data2 <- read_excel("../data_output/experiment_higherorders_20201118_25nreps_[100]_[50, 25, 10]_[2]_[20, 10, 5].xlsx")
-# we add a setting for times = 200 to the experiment at 13 11
-data3 <- read_excel("../data_output/experiment_higherorders_20201118_10nreps_[100]_[200]_[10, 5, 2]_[20, 10, 5].xlsx")
-# we repeat phi aicc for 200 because we find that there is a problem when we restructured the code at 18 11
-data_phiaicc_200 <- read_excel("../data_output/experiment_higherorders_20201123_10nreps_[100]_[200]_[10, 5, 2]_[20, 10, 5].xlsx")
+#data <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201117_10nreps_[100, 500]_[50, 200]_[2, 5, 10]_[20].xlsx")
+# we add a setting for states = 2 to the experiments on 13-11
+data2 <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201118_25nreps_[100]_[50, 25, 10]_[2]_[20, 10, 5].xlsx")
+# we add a setting for times = 200 to the experiments on 13-11
+data3 <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201118_10nreps_[100]_[200]_[10, 5, 2]_[20, 10, 5].xlsx")
+# we repeat phi aicc for 200 because we find that there is a problem when we restructured the code on 18-11
+data_phiaicc_200 <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201123_10nreps_[100]_[200]_[10, 5, 2]_[20, 10, 5].xlsx")
 # we run omegatv again to be sure about the output
-data_omegatv <- read_excel("../data_output/experiment_higherorders_20201124_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_omegatv <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201124_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 # we run phiwd again to be sure about the output
-data_phiwd <- read_excel("../data_output/experiment_higherorders_20201125_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_phiwd <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201125_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 # we find a mistake in phiwrl and repeat those simulations
-data_phiwrl <- read_excel("../data_output/experiment_higherorders_20201126_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-
+data_phiwrl <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201126_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 
 #head(data)
 #head(data2)
@@ -658,3 +660,11 @@ for(i in 1:length(all_measures)){
   ggsave(name, dpi = 300)
   
 }
+
+#### Simulation results and figures for manuscript january 2021 ####
+
+data_omegatv <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201124_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_phiwd <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201125_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_phiwrl <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201126_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+

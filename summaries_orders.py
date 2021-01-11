@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-import qualities as qm
-
 def prepare_resultlist_cq(result_set=None, cq_satisfied=None, quality_measure=None, q=None, w=None):
 
     # add rules to result set - then order - then select q first as the current result set  

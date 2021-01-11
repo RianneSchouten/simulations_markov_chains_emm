@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import dataset as dt
 import emm_rw_dataset_orders as rwdto
-import beam_search as bs
 
 def main(name_dataset=None, calculate_distributions=None, nr_quantiles=None, quality_measures=None, 
          w=None, d=None, q=None, m=None, Z=None, seed=None, 

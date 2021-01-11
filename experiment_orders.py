@@ -85,8 +85,8 @@ def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
     for quality_measure in quality_measures:
         #print('quality_measure', quality_measure)
         result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
-                                                                          nr_quantiles=nr_quantiles, save_location=None, ref=ref, start_at_order=start_at_order,
-                                                                          quality_measure=quality_measure, w=w, d=d, q=q, Z=None)
+                                                                           nr_quantiles=nr_quantiles, save_location=None, ref=ref, start_at_order=start_at_order,
+                                                                           quality_measure=quality_measure, w=w, d=d, q=q, Z=None)
         # here, as part of the experiment, the rank of the true subgroup is evaluated
         result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)
