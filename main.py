@@ -54,6 +54,7 @@ def main(subgroup_orders=None,
     
 if __name__ == '__main__':
 
+    '''
     # main analysis
     main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
@@ -61,7 +62,7 @@ if __name__ == '__main__':
          start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
          nreps=10, seed=20210110, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
-
+    '''
     '''
     # run this to test the difference between different references
     # reference dataset is computationally most efficient
@@ -74,18 +75,18 @@ if __name__ == '__main__':
          nreps=10, seed=20201117, ncovs=[5],
          N=[200], T=[50], S=[10])
     '''
-    '''
+    
     # run this to test whether entire dataset follows order 1
     # turns out that either order = 1 or order = 0 is chosen
     # order = 0 is chosen when the likelihood increases so much between order 1 and 0 
     # that the parameter penalty cannot correct for it
-    main(nr_quantiles=8, subgroup_orders = [0,1,2,3],
+    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
          quality_measures=['phibic', 'phiaic'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwarl'],
          w=25, d=3, q=20, start_at_order=4, refs=['dataset'],
          save_location='./data_output/experiment_true_order_dataset',
-         nreps=10, seed=20201117, ncovs=[5],
-         N=[200], T=[50], S=[10])
-    '''
+         nreps=1, seed=20201117, ncovs=[5],
+         N=[100], T=[50], S=[10])
+    
 
 
 
