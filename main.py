@@ -69,7 +69,7 @@ if __name__ == '__main__':
     # simulation with subgroups of order = 0 (not the same as frequency!)
     main(nr_quantiles=8, subgroup_orders = [0],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
-         w=25, d=d3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
+         w=25, d=3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
          save_location='./data_output/results_manuscript/experiment_zero_order_subgroups',
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          nreps=10, seed=20210112, ncovs=[20, 10, 5],
