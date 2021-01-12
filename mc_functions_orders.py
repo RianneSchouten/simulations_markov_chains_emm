@@ -68,6 +68,7 @@ def calculate_reference_score(ref=None, general_params=None, subgroup_params=Non
                                 data_size=subgroup_params['sg_size'], print_this=print_this)
         return ll, score
     
+    '''
     elif ref == 'complement':
         # sg on complement
         ll, ll_list = calculate_log_likelihood(probs=subgroup_params['probs_compl'], freqs=subgroup_params['freqs'], 
@@ -80,6 +81,7 @@ def calculate_reference_score(ref=None, general_params=None, subgroup_params=Non
                                                initial_freqs=subgroup_params['initial_freqs_compl'], ll_list=None, order=1, s=len(general_params['states']))
         score = calculate_score(ll=ll, quality_measure=quality_measure, order=1, s=len(general_params['states']), data_size=subgroup_params['sg_size_compl'])
         return ll, score
+    '''
 
 def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, start_at_order=None, stop_at_order=None,
                                  s=None, quality_measure=None, data_size=None, print_this=None):
@@ -239,7 +241,7 @@ def h_distance_transition_matrix(general_params=None, subgroup_params=None):
     freq = 'freq_' + str(order-1)
     prob = 'prob_' + str(order)
 
-    ls = subgroup_params['freqs'][freq] # normalized freqs first timepoint using all timepoints to estimate 1st order matrix
+    ls = subgroup_params['freqs'][freq] # normalized freqs first timepoint using all timepoints to estimate kth order matrix
 
     deltatv = manhattan_distance(taA=general_params['probs'][prob], taB=subgroup_params['probs'][prob], lsB=ls, weighted=False, order=order, s=s)
     omegatv = manhattan_distance(taA=general_params['probs'][prob], taB=subgroup_params['probs'][prob], lsB=ls, weighted=True, order=order, s=s)

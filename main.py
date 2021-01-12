@@ -65,6 +65,16 @@ if __name__ == '__main__':
          nreps=10, seed=20210110, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
     '''
+
+    # simulation with subgroups of order = 0 (not the same as frequency!)
+    main(nr_quantiles=8, subgroup_orders = [0],
+         quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
+         w=25, d=d3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
+         save_location='./data_output/results_manuscript/experiment_zero_order_subgroups',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         nreps=10, seed=20210112, ncovs=[20, 10, 5],
+         N=[100, 500, 1000], T=[10, 5, 2], S=[10, 5, 2])
+
     '''
     # run this to test the difference between different references
     # reference dataset is computationally most efficient
@@ -78,18 +88,7 @@ if __name__ == '__main__':
          nreps=10, seed=20201117, ncovs=[5], stop_at_order=1,
          N=[200], T=[50], S=[10])
     '''
-    
-    # run this to test whether entire dataset follows order 1
-    # turns out that either order = 1 or order = 0 is chosen
-    # order = 0 is chosen when the likelihood increases so much between order 1 and 0 
-    # that the parameter penalty cannot correct for it
-    main(nr_quantiles=8, subgroup_orders = [1,3],
-         quality_measures=['omegatv'], #['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
-         w=25, d=3, q=20, start_at_order=4, stop_at_order=1, refs=['dataset'],
-         save_location='./data_output/experiment_true_order_dataset',
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         nreps=1, seed=20210111, ncovs=[5],
-         N=[100], T=[50], S=[10])
+
     
 
 

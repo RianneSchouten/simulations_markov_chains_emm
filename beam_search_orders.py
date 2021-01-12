@@ -45,7 +45,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         n_small_groups = 0
         n_redundant_coverage = 0
         
-        print('level:', d_i)
+        #print('level:', d_i)
 
         cq_satisfied = []
         for seed in candidate_queue:

@@ -22,7 +22,7 @@ def constraint_subgroup_size(subgroup=None, attributes=None, general_params=None
     # length of dataset can be different than number of cases
     # if len(subgroup)/general_params['data_size'] > 0.1:
     if len(subgroup[attributes['id_attribute']].unique()) / general_params['data_size']['nr_sequences'] < constraint_subgroup_size:
-        print('constraint on subgroup size')
+        #print('constraint on subgroup size')
         constraint_check = False
 
 
@@ -35,7 +35,7 @@ def redundant_subgroup_coverage(level=None, idx_sg_old=None, idx_sg_new=None, co
         perc_overlap = len(idx_sg_new) / len(idx_sg_old)
 
         if perc_overlap > constraint_subgroup_coverage:
-            print('constraint on redundant subgroup coverage')
+            #print('constraint on redundant subgroup coverage')
             return False
         else: 
             return True
