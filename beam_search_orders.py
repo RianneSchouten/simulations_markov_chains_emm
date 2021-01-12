@@ -28,11 +28,10 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                                                       quality_measure=quality_measure)
     #print(general_params)
 
-    candidate_queue  = rf.create_starting_descriptions(df=df, cols=cols, 
-                                                       bin_atts=bin_atts, nom_atts=nom_atts, 
-                                                       num_atts=num_atts, dt_atts=dt_atts,
-                                                       nr_quantiles=nr_quantiles)
-
+    candidate_queue, nominal_values  = rf.create_starting_descriptions(df=df, cols=cols, 
+                                                                       bin_atts=bin_atts, nom_atts=nom_atts, 
+                                                                       num_atts=num_atts, dt_atts=dt_atts,
+                                                                       nr_quantiles=nr_quantiles)
     #print('candidate queue:', candidate_queue)
     
     result_set = []
@@ -60,11 +59,11 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                 seed_set.append(seed)
             else:                
                 seed_set = rf.refine_seed(seed=seed, subgroup=subgroup, bin_atts=bin_atts, nom_atts=nom_atts,
-                                          num_atts=num_atts, dt_atts=dt_atts, nr_quantiles=nr_quantiles)
+                                          num_atts=num_atts, dt_atts=dt_atts, nr_quantiles=nr_quantiles, nominal_values=nominal_values)
 
             for desc in seed_set:
 
-                #print(desc['description'])
+                print(desc['description'])
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:

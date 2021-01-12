@@ -76,14 +76,27 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
 
             elif pair[0] in nom_atts:
 
-                # when the first value is a 1, then take all datapoints with the value in position two
-                if pair[1][0] == 1.0:
-                    sel_idx = df[df[pair[0]] == pair[1][1]].index.values
-                    idx = np.intersect1d(idx, sel_idx)
-                # when the first value is a 0, then take all datapoints that do not have the value in position two
-                elif pair[1][0] == 0.0:
-                    sel_idx = df[df[pair[0]] != pair[1][1]].index.values
-                    idx = np.intersect1d(idx, sel_idx)    
+                # nominal attributes have a list of tuples as description
+                # we have to process each tuple
+                for tup in pair[1]:
+  
+                    # when the first value is a 1, then take all datapoints with the value in position two
+                    '''
+                    if pair[1][0] == 1.0:
+                        sel_idx = df[df[pair[0]] == pair[1][1]].index.values
+                        idx = np.intersect1d(idx, sel_idx)
+                    # when the first value is a 0, then take all datapoints that do not have the value in position two
+                    elif pair[1][0] == 0.0:
+                        sel_idx = df[df[pair[0]] != pair[1][1]].index.values
+                        idx = np.intersect1d(idx, sel_idx)   
+                    '''
+                    if tup[0] == 1.0:
+                        sel_idx = df[df[pair[0]] == tup[1]].index.values
+                        idx = np.intersect1d(idx, sel_idx)
+                    # when the first value is a 0, then take all datapoints that do not have the value in position two
+                    elif tup[0] == 0.0:
+                        sel_idx = df[df[pair[0]] != tup[1]].index.values
+                        idx = np.intersect1d(idx, sel_idx)    
 
             elif pair[0] in dt_atts:
 
