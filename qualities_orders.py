@@ -30,8 +30,8 @@ def calculate_qm(general_params=None, subgroup_params=None, quality_measure=None
   
     qm_all['sg_prop'] = round(subgroup_params['sg_size']['nr_sequences']/general_params['data_size']['nr_sequences'], 4)
     qm_all['idx_sg'] = subgroup_params['idx_sg']    
-    qm_all['prob_0'] = subgroup_params['probs']['prob_0']    
-    qm_all['prob_1'] = subgroup_params['probs']['prob_1']   
+    #qm_all['prob_0'] = subgroup_params['probs']['prob_0']    
+    #qm_all['prob_1'] = subgroup_params['probs']['prob_1']   
 
     return qm_all
 
@@ -46,8 +46,8 @@ def calculate_general_parameters(df=None, distribution=None, cols=None, attribut
                                             stop_at_order=stop_at_order, data_size=data_size, quality_measure=quality_measure)
 
     if distribution is not None:
-        mu = np.mean(distribution)
-        sigma = np.std(distribution)
+        mu = np.nanmean(distribution)
+        sigma = np.nanstd(distribution)
     else:
         mu = np.nan
         sigma = np.nan

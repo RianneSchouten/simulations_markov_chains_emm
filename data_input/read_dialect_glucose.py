@@ -73,7 +73,8 @@ def read_dialect_descriptives(name_dataset=None):
     columns = list(data.dtypes.index.values)
     print(columns)
 
-    data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H'))
+    #data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H'))
+    data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'A', np.where(data['HbA1c'] <= 58 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H')))
 
     # we are selecting all variables that Niala is using in her article
     # We also add HbA1c as a category according to Niala's article
@@ -104,8 +105,9 @@ def read_dialect_descriptives(name_dataset=None):
             data[column] = data[column].fillna(data[column].mean())
     
     # just for testing
-    #print(data.shape)
-    #data = data.drop(data.columns[2:29], axis=1)
+    print(data.shape)
+    data = data.drop(data.columns[2:23], axis=1)
+    print(data.columns)
     #print(data.shape)
 
     for column in data.columns:
@@ -186,11 +188,11 @@ def ranges_from_glucose(glucose_data=None, type_states=None):
         
         glucose_data = glucose_data[['Historie glucose (mmol/L)', 'Timepoints']]
 
-        state_column = np.where(glucose_data[glucose_column] < 3.0, 'TBR2', 
-                       np.where(glucose_data[glucose_column] < 4.0, 'TBR1', 
-                       np.where(glucose_data[glucose_column] < 10.1, 'TIR', 
-                       np.where(glucose_data[glucose_column] < 14, 'TAR1',
-                       'TAR2'))))
+        state_column = np.where(glucose_data[glucose_column] < 3.0, 'BR2', 
+                       np.where(glucose_data[glucose_column] < 4.0, 'BR1', 
+                       np.where(glucose_data[glucose_column] < 10.1, 'IR', 
+                       np.where(glucose_data[glucose_column] < 14, 'AR1',
+                       'AR2'))))
 
         glucose_data['State1'] = state_column        
         range_data = glucose_data.copy()

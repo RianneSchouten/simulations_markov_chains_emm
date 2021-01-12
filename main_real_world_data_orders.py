@@ -4,7 +4,7 @@ import dataset as dt
 import emm_rw_dataset_orders as rwdto
 
 def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
-         nr_quantiles=None, quality_measures=None, 
+         nr_quantiles=None, quality_measure=None, 
          w=None, d=None, q=None, m=None, Z=None, seed=None, 
          constraint_subgroup_size=None, constraint_subgroup_coverage=None,
          ref=None, start_at_order=None, stop_at_order=None, save_location=None):
@@ -21,7 +21,7 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
      
     result_rw_analysis, considered_subgroups, general_params = rwdto.analysis_rw_dataset(dataset=data, calculate_distribution=calculate_distribution,
                                                                                          use_distribution=use_distribution, attributes=attributes, 
-                                                                                         nr_quantiles=nr_quantiles, quality_measures=quality_measures, w=w, d=d, q=q, m=m, Z=Z,
+                                                                                         nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, m=m, Z=Z,
                                                                                          constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
                                                                                          ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order, 
                                                                                          save_location=save_location_total)
@@ -43,8 +43,8 @@ if __name__ == '__main__':
     main(name_dataset='TIRpatientendata_2',  
          #name_dataset='studyportals',
          calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measures=['omegatv'],
-         w=15, d=1, q=15, m=2, Z=0.01, seed=20210111,
+         nr_quantiles=4, quality_measure='omegatv', # just one !!
+         w=15, d=2, q=15, m=None, Z=None, seed=20210111,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1,

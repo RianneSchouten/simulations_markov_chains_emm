@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+import qualities_orders as qmo
+
 def prepare_resultlist_cq(result_set=None, cq_satisfied=None, quality_measure=None, q=None, w=None):
 
     # add rules to result set - then order - then select q first as the current result set  
@@ -8,19 +10,8 @@ def prepare_resultlist_cq(result_set=None, cq_satisfied=None, quality_measure=No
     result_set = [item for sublist in result_set for item in sublist] # unlist alle elements
     result_set_ordered = sorted(result_set, key = lambda i: i['qualities'][quality_measure], reverse=True) # sort each description according to the sort var
     
-    #print('len ordered', len(result_set_ordered))
-    #if distribution is not None:
-        # check whether the qm is significant
-    #    result_set_selected = qm.check_significance(result_set_ordered=result_set_ordered, general_params=general_params, quality_measure=quality_measure, Z=Z)
-        #print('len selected', len(result_set_selected))
-    #    result_set = [result_set_selected[0:q]]
-    #else:
     result_set = [result_set_ordered[0:q]] # Add descriptions to result set based on priority and q and save as a list for next iteration
-
     beam = sorted(cq_satisfied, key = lambda i: i['qualities'][quality_measure], reverse=True) 
-    #if distribution is not None:
-    #    candidate_queue = beam[0:(w*2)] # Bring the beam as the candidate queue to the next iteration
-    #else:
     candidate_queue = beam[0:w]
 
     return result_set, candidate_queue
@@ -31,18 +22,17 @@ def resultlist_emm(result_set=None, distribution=None, quality_measure=None, gen
         print('Empty result set')
         result_emm = None
     else:
-        # first reduce the result set
+        # first reduce the result set if the dfd should be taken into account
         if distribution is not None:
             print('len ordered', len(result_set[0]))
-            result_set_selected = qm.check_significance(result_set_ordered=result_set[0], 
-                                                        general_params=general_params, 
-                                                        quality_measure=quality_measure, Z=Z)
-            #result_set_selected = result_set[0]
+            result_set_selected = qmo.check_significance(result_set_ordered=result_set[0], 
+                                                         general_params=general_params, 
+                                                         quality_measure=quality_measure, Z=Z)
             print('len selected', len(result_set_selected))
         else:
             result_set_selected = result_set[0]
 
-        # then change result set in another format
+        # then change the format of the result set
         if len(result_set_selected) == 0:
             print('Empty result set')
             result_emm = None
@@ -66,19 +56,15 @@ def rank_result_emm(result_emm=None, quality_measure=None):
     if 'x0' not in result_emm:
         result_emm['x0'] = np.nan
 
+    # it is important that the covs are ordered from x0 to x1 to x2, etc.
+    # this is done in resultlist_emm
+
     # get the idx of the subgroup of interest
     # get all covariates, they all start with 'x'
     # the covariates are ordered
     cols = result_emm.dtypes.index
     covs = cols[cols.str.startswith('x')]
-
-    #ons = np.repeat(np.NaN, len(covs)-2)
-    #true_outcome = list(np.ones(2))
-    #for item in ons: 
-    #    true_outcome.append(item)
     
-    # it is important that the covs are ordered from x0 to x1 to x2, etc.
-    # this is done in resultlist_emm
     # get all descriptions, these are ordered in the result list based on the quality measure
     # the true subgroup has a 1 for the first two covariates (x0 and x1) and NaN for the other covariates
     descriptions = result_emm.loc['description', covs]
@@ -105,6 +91,8 @@ def rank_result_emm(result_emm=None, quality_measure=None):
 
 def join_result_emm(result_emm=None, result_rw_analysis=None, quality_measure=None, q=None):
 
+    # allow a dataset to be analyzed with multiple quality measures
+    # we store the dfd of all quality measures together
     if result_emm is not None:
         if len(result_emm) < q*2:
             l = len(result_emm)

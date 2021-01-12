@@ -7,7 +7,7 @@ import summaries_orders as suo
 import distribution_false_discoveries_orders as dfdo
 
 def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribution=None, attributes=None, 
-                        nr_quantiles=None, quality_measures=None, w=None, d=None, q=None, m=None, Z=None, 
+                        nr_quantiles=None, quality_measure=None, w=None, d=None, q=None, m=None, Z=None, 
                         constraint_subgroup_coverage=None, constraint_subgroup_size=None,
                         ref=None, start_at_order=None, stop_at_order=None, save_location=None):   
     
@@ -17,16 +17,14 @@ def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribut
 
             distributions = {}
 
-            for quality_measure in quality_measures:
-
-                # find distribution
-                # to find the distribution q = 1
-                distribution = dfdo.parallelization_over_iterations(m=m, dataset=dataset, attributes=attributes,
+            # find distribution
+            # to find the distribution q = 1
+            distribution = dfdo.parallelization_over_iterations(m=m, dataset=dataset, attributes=attributes,
                                                                     constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size,
                                                                     nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d,
                                                                     ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order)
-                print(distribution)
-                distributions[quality_measure] = distribution
+            print(distribution)
+            distributions[quality_measure] = distribution
 
             # save
             pd_distributions = pd.DataFrame(distributions)
@@ -46,34 +44,21 @@ def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribut
 
         # use distribution in the beam search 
         result_rw_analysis = pd.DataFrame()
-
-        for quality_measure in quality_measures:
-
-            print(quality_measure)
-    
-            result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=distributions[quality_measure], attributes=attributes,
+   
+        result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=distributions[quality_measure], attributes=attributes,
                                                                                nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, Z=Z, 
                                                                                ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order,
                                                                                constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size)
-            print(considered_subgroups)
+        print(considered_subgroups)
 
     else:
 
-        # do not use the distribution
-        result_rw_analysis = pd.DataFrame()
-
-        for quality_measure in quality_measures:
-
-            print(quality_measure)
-    
-            result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes,
+        # do not use the distribution    
+        result_rw_analysis, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes,
                                                                                nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, Z=None, 
                                                                                ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order,
                                                                                constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size)
-            print(considered_subgroups)
-
-        # join with other quality measures, if any
-        result_rw_analysis = suo.join_result_emm(result_emm=result_emm, result_rw_analysis=result_rw_analysis, quality_measure=quality_measure, q=q)
+        print(considered_subgroups)
 
     return result_rw_analysis, considered_subgroups, general_params
 

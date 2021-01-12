@@ -16,10 +16,10 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
-    #print(bin_atts)
-    #print(nom_atts)
-    #print(num_atts)
-    #print(dt_atts)
+    print(bin_atts)
+    print(nom_atts)
+    print(num_atts)
+    print(dt_atts)
     #print(df.describe(include='all'))
 
     # Calculate general parameters
@@ -45,10 +45,12 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         n_small_groups = 0
         n_redundant_coverage = 0
         
-        #print('level:', d_i)
+        print('level:', d_i)
 
         cq_satisfied = []
         for seed in candidate_queue:
+
+            #print('seed:', seed)
 
             subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=seed['description'], df=df, 
                                                                              bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
@@ -117,7 +119,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     # result set is a dictionary
     # result emm is a dataframe with the descriptive attributes on the columns, and q*2 rows
     result_emm = suo.resultlist_emm(result_set=result_set, distribution=distribution, general_params=general_params,
-                                   quality_measure=quality_measure, Z=Z)
+                                    quality_measure=quality_measure, Z=Z)
     #print(result_emm)
     
     if save_location is not None:
@@ -127,5 +129,3 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     #print(nconsd_list)
 
     return result_emm, considered_subgroups, general_params
-
-    #return {quality_measure: general_params['found_order']},2,3
