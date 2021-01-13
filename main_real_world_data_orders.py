@@ -44,7 +44,7 @@ if __name__ == '__main__':
          #name_dataset='studyportals',
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='omegatv', # just one !!
-         w=15, d=3, q=5, m=None, Z=None, seed=20210111,
+         w=20, d=3, q=25, m=None, Z=None, seed=20210113,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1,

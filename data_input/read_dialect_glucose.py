@@ -8,7 +8,11 @@ import matplotlib.pyplot as plt
 def read_dialect_glucose(name_dataset=None, type_states=None):
 
     # read descriptives
-    descriptive_data, skip_attributes, id_attribute, descriptives = read_dialect_descriptives(name_dataset=name_dataset)
+    descriptive_data, skip_attributes, id_attribute, columns_and_missings = read_dialect_descriptives(name_dataset=name_dataset)
+    descriptive_data['nr_missings'] = np.nan
+    descriptive_data['seq_length'] = np.nan
+    print(descriptive_data.head(20))
+    print(descriptive_data.dtypes)
     column_names = descriptive_data.dtypes.index.values
 
     # start empty dataframe
@@ -34,34 +38,38 @@ def read_dialect_glucose(name_dataset=None, type_states=None):
                                        decimal=',')
         
         # calculate states from glucose values
-        range_data, first_timepoint, time_attributes = ranges_from_glucose(glucose_data=glucose_data, type_states=type_states)
+        range_data, first_timepoint, time_attributes, missings, seq_length = ranges_from_glucose(glucose_data=glucose_data, type_states=type_states)
         states_data, combinations = states_from_ranges(range_data=range_data, time_attributes=time_attributes, type_states=type_states)
         states_data_complete, time_attributes = create_two_time_columns(states_data=states_data, time_attributes=time_attributes)
 
         # merge with descriptive
         T = len(states_data_complete)
-        descs = descriptive_data.loc[descriptive_data['Pt nr'] == num, :].values
-        descs_rep = pd.DataFrame(np.tile(descs, T).reshape((T, P)), columns=column_names)
+        descs = descriptive_data[descriptive_data['Pt nr'] == num].copy()
+        descs['nr_missings'] = missings
+        descs['seq_length'] = seq_length
+        descs_rep = descs.append([descs]*(T-1), ignore_index=True)
         ptnum = states_data_complete.join(descs_rep)
 
         # join for all patients
         data = data.append(ptnum)
 
-    # to ensure selection of subgroup
+    summary = data.describe(include='all')
+
+    # for the refinements later on it is useful to have the indices sorted
     data.reset_index(drop=True, inplace=True)
           
     outcome_attribute = None      
     attributes = {'time_attributes': time_attributes, 'skip_attributes': skip_attributes,
-               'id_attribute': id_attribute, 'first_timepoint': first_timepoint, 'descriptives': descriptives, 
-               'outcome_attribute': outcome_attribute}
+                  'id_attribute': id_attribute, 'first_timepoint': first_timepoint, 
+                  'outcome_attribute': outcome_attribute}
     df_attributes = pd.DataFrame(dict([(k, pd.Series(v)) for k,v in attributes.items()]))
 
-    dfs = {'data': data, 'df_attributes': df_attributes, 'combinations': combinations}
+    dfs = {'data': data, 'summary': summary, 'columns_and_missings': pd.DataFrame(columns_and_missings), 'df_attributes': df_attributes, 'combinations': combinations}
     location_processed = name_dataset + '_' + str(type_states) + '_preprocessed.xlsx'
 
     writer = pd.ExcelWriter(location_processed, engine='xlsxwriter')
     for sheet_name in dfs.keys():
-        dfs[sheet_name].to_excel(writer, sheet_name=sheet_name, index=False)
+        dfs[sheet_name].to_excel(writer, sheet_name=sheet_name, index=True)
     writer.save()
 
     return data, attributes, combinations
@@ -71,10 +79,8 @@ def read_dialect_descriptives(name_dataset=None):
     location = name_dataset + '.xlsx'
     data = pd.read_excel(location, sheet_name='Alle', header=0)
     columns = list(data.dtypes.index.values)
-    print(columns)
 
-    #data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H'))
-    data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'A', np.where(data['HbA1c'] <= 58 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H')))
+    data['HbA1c_category'] = np.where(data['HbA1c'] <= 53 , 'L', np.where(data['HbA1c'] <= 62, 'M', 'H'))
 
     # we are selecting all variables that Niala is using in her article
     # We also add HbA1c as a category according to Niala's article
@@ -105,24 +111,27 @@ def read_dialect_descriptives(name_dataset=None):
             data[column] = data[column].fillna(data[column].mean())
     
     # just for testing
-    print(data.shape)
-    data = data.drop(data.columns[2:23], axis=1)
-    print(data.columns)
+    #print(data.shape)
+    #data = data.drop(data.columns[2:23], axis=1)
+    #print(data.columns)
     #print(data.shape)
 
     for column in data.columns:
         if data[column].dtype == np.float64:
             data[column] = np.round(data[column], 1)
 
-    skip_attributes = ['HbA1c']
-    descriptives = data.dtypes.drop(skip_attributes).index.values
+    skip_attributes = ['HbA1c','nr_missings', 'seq_length']
     id_attribute = 'Pt nr'
 
-    return data, skip_attributes, id_attribute, descriptives
+    return data, skip_attributes, id_attribute, columns_and_missings
 
 def ranges_from_glucose(glucose_data=None, type_states=None):
 
     glucose_column = 'Historie glucose (mmol/L)'
+
+    missings = glucose_data[glucose_column].isnull().sum()
+    seq_length = len(glucose_data[glucose_column])
+    
     glucose_data = glucose_data.dropna(subset=[glucose_column])
     glucose_data = glucose_data.reset_index(drop=True)
 
@@ -200,7 +209,7 @@ def ranges_from_glucose(glucose_data=None, type_states=None):
     first_timepoint = 0
     time_attributes = ['Timepoints']   
 
-    return range_data, first_timepoint, time_attributes
+    return range_data, first_timepoint, time_attributes, missings, seq_length
 
 def states_from_ranges(range_data=None, time_attributes=None, type_states=None):
 
