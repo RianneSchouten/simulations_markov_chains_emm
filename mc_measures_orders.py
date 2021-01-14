@@ -192,7 +192,7 @@ def initial_count_matrix(df=None, time_attributes=None, states=None, first_timep
                 if lss.shape[1] != s:
                     add_states = list(set(states) - set(lss.columns.tolist()))
                     for state in add_states:
-                        lss[state] = np.nan
+                        lss[state] = 0
         
             if lss.shape[0] != s**o:
             

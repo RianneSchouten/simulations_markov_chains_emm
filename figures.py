@@ -9,12 +9,12 @@ import dataset as dt
 import qualities_orders as qmo
 import mc_functions_orders as fo
 
-result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='TIRpatientendata_1_20201129_resultset')
+result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='TIRpatientendata_2_20210114_resultset')
 results = result_rw_analysis.copy()
-dataset, attributes, combinations = rwdto.load(name_dataset='TIRpatientendata_1')  
-df, cols, bin_atts, nom_atts, num_atts, dt_atts = dt.read_data(dataset=dataset, attributes=attributes)
+dataset, attributes, combinations = rwdto.load(name_dataset='TIRpatientendata_2')  
+df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
 quality_measure = 'phiaic'
-general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=1, 
+general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=2, 
                                                   start_at_order=4, quality_measure=quality_measure)
 '''
 score, lld, found_order = fo.calculate_best_fitting_order(probs=general_params['probs'], freqs=general_params['freqs'], initial_freqs=general_params['initial_freqs'], start_at_order=4, 
@@ -25,14 +25,14 @@ print(found_order)
 print(general_params)
 '''
 # figure general params
-fig = ff.visualize_probs(tA=general_params['probs']['prob_1'], tpi=general_params['probs']['prob_0'], states=general_params['states'],
-                         order=1, y_names=general_params['empty_dfs']['empty_lss_1'].index.values, 
+fig = ff.visualize_probs(tA=general_params['probs']['prob_2'], tpi=general_params['probs']['prob_0'], states=general_params['states'],
+                         order=2, y_names=general_params['empty_dfs']['empty_lss_2'].index.values, 
                          title='General parameters', name_fig='figures/visualization_general.png')
 
-for sgn in np.arange(0, 10):
+for sgn in np.arange(0, 15):
 
     sg = results.loc[results.sg == sgn, ]
-    desc = sg.iloc[0, ].dropna().drop(['sg', 'qm']).to_dict()
+    desc = sg.iloc[0, ].dropna().drop(['sg']).to_dict()
     quals = sg.iloc[1, ].dropna()
     order = int(quals.loc['best_order'])
 

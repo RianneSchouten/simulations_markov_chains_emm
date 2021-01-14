@@ -44,12 +44,19 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
         # calculate reference likelihood
         refll, refscore = calculate_reference_score(ref=ref, general_params=general_params, subgroup_params=subgroup_params, 
                                                     quality_measure=quality_measure, print_this=print_this)
+        if np.isnan(refscore):
+            print(refll)
+            print(refscore)
+            print(general_params['found_order'])
+            print(subgroup_params['initial_freqs'])
+            print(subgroup_params['freqs'])
                
         if print_this:
             print('reference')
             print(start_at_order)
             print(refll)
             print(refscore)
+            
 
         if ref in ['dataset', 'complement']:
             qm = score - refscore

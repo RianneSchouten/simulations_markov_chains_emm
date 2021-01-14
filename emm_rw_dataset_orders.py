@@ -42,10 +42,8 @@ def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribut
             sheets = pd.read_excel(save_location + '_distributions.xlsx', sheet_name=['pd_distributions', 'pd_distributions_info'], header=0)
             distributions = sheets['pd_distributions']
 
-        # use distribution in the beam search 
-        result_rw_analysis = pd.DataFrame()
-   
-        result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=distributions[quality_measure], attributes=attributes,
+        # use distribution in the beam search    
+        result_rw_analysis, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=distributions[quality_measure], attributes=attributes,
                                                                                nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, Z=Z, 
                                                                                ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order,
                                                                                constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size)

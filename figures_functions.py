@@ -42,7 +42,7 @@ def visualize_probs(tA=None, tpi=None, states=None, order=None, y_names=None, ti
 
     states = list(states)
     x_names = ['start'] + states
-    y_names = [('start')] + list(y_names)
+    y_names = list(y_names) #[('start')] + list(y_names)
 
     # create a 2 X 2 grid 
     if order == 1:

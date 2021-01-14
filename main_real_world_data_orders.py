@@ -40,13 +40,32 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
 
 if __name__ == '__main__':
 
-    main(name_dataset='TIRpatientendata_2',  
-         #name_dataset='studyportals',
+    main(name_dataset='studyportals',
          calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measure='omegatv', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210113,
+         nr_quantiles=4, quality_measure='phiaic', # just one !!
+         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1,
          save_location='./data_output/')
 
+    '''
+    main(name_dataset='TIRpatientendata_2',  
+         #name_dataset='studyportals',
+         calculate_distribution=False, use_distribution=False,
+         nr_quantiles=4, quality_measure='phiaic', # just one !!
+         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
+         ref='dataset', start_at_order=4,
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         stop_at_order=1,
+         save_location='./data_output/')
+
+    main(name_dataset='TIRpatientendata_1', 
+         calculate_distribution=False, use_distribution=False,
+         nr_quantiles=4, quality_measure='phiaic', # just one !!
+         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
+         ref='dataset', start_at_order=2,
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         stop_at_order=0,
+         save_location='./data_output/')
+    '''

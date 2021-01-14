@@ -106,7 +106,9 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                                                  ref=ref, start_at_order=subgroup_params['new_order'], stop_at_order=stop_at_order,
                                                  print_this=False)
 
-                            cq_satisfied.append(desc_qm)                 
+                            cq_satisfied.append(desc_qm)
+                            #print(desc_qm['description'])
+                            #print(desc_qm['qualities'][quality_measure])                 
 
         considered_subgroups['level_' + str(d_i)] = {'n_consd': n_consd, 'n_redundant_descs': n_redundant_descs, 
                                                      'n_small_groups': n_small_groups, 'n_redundant_coverage': n_redundant_coverage}
