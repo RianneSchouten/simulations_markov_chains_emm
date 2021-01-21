@@ -114,7 +114,7 @@ def read_dialect_descriptives(name_dataset=None):
     
     # just for testing
     #print(data.shape)
-    #data = data.drop(data.columns[2:20], axis=1)
+    data = data.drop(data.columns[2:20], axis=1)
     #print(data.columns)
     #print(data.shape)
 

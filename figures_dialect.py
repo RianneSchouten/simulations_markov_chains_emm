@@ -54,6 +54,12 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
         new_index = list(it.product(new_order_states, repeat=2))
         tA_new_columns = tA[new_order_states]
         new_values = tA_new_columns.reindex(new_index)
+    elif order == 3:
+        new_order_states = ['BR2', 'BR1', 'IR', 'AR1', 'AR2']
+        x_names = [('start')] + list(new_order_states)
+        new_index = list(it.product(new_order_states, repeat=3))
+        tA_new_columns = tA[new_order_states]
+        new_values = tA_new_columns.reindex(new_index)
 
     if dif:
         min_value = -0.5
@@ -83,7 +89,7 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
         
         fig.savefig(name_fig, bbox_inches='tight')
 
-    else:
+    elif order == 2:
 
         fig = plt.figure(figsize=(8, 16), dpi=80, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 2, width_ratios=[28,1])
@@ -91,6 +97,25 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
         # image plot
         ax0 = plt.subplot(gs[0])
         p = ax0.imshow(new_values, aspect=0.5, vmin=min_value, vmax=max_value, cmap=plt.get_cmap(cmap))
+        ax0.set_xticklabels(x_names, rotation=45)
+        ax0.set_yticks(np.arange(len(new_values)))
+        ax0.set_yticklabels(new_index)
+        plt.title(title)
+
+        colorAx = plt.subplot(gs[1])
+        cb = plt.colorbar(p, cax=colorAx)
+        cb.set_clim(min_value, max_value)
+        
+        fig.savefig(name_fig, bbox_inches='tight')
+
+    elif order == 3:
+
+        fig = plt.figure(figsize=(8, 24), dpi=80, facecolor='w', edgecolor='k')
+        gs = grd.GridSpec(1, 2, width_ratios=[28,1])
+
+        # image plot
+        ax0 = plt.subplot(gs[0])
+        p = ax0.imshow(new_values, aspect=0.33, vmin=min_value, vmax=max_value, cmap=plt.get_cmap(cmap))
         ax0.set_xticklabels(x_names, rotation=45)
         ax0.set_yticks(np.arange(len(new_values)))
         ax0.set_yticklabels(new_index)
@@ -312,15 +337,15 @@ results = result_rw_analysis.copy()
 dataset, attributes, combinations = rwdto.load(name_dataset='TIRpatientendata_2')  
 df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
 quality_measure = 'phiaic'
-order_data = 2
-general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=4, 
-                                                  start_at_order=4, quality_measure=quality_measure)
+order_data = 3
+general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=3, 
+                                                  start_at_order=3, quality_measure=quality_measure)
 print(general_params)
 
 # figure general params
-fig = visualize_probs(tA=general_params['probs']['prob_2'], tpi=None, states=general_params['states'], data_set=2,
-                      order=2, title='Parameters entire dataset', name_fig='figures/visualization_general.png')
-
+fig = visualize_probs(tA=general_params['probs']['prob_3'], tpi=None, states=general_params['states'], data_set=2,
+                      order=3, title='Parameters entire dataset', name_fig='figures/visualization_general.png')
+'''
 for sgn in [0,3]:
 
     sg = results.loc[results.sg == sgn, ]
@@ -368,4 +393,4 @@ for sgn in [0,3]:
                                        title1='Parameters entire dataset (chart 1)', title2='Parameters subgroup ' + str(sgn+1) + ' (chart 2)', 
                                        title3='Difference in parameters subgroup ' + str(sgn+1) + ' (chart 2 - chart 1)', 
                                        name_fig='figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
-
+'''

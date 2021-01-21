@@ -11,11 +11,9 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     first_timepoint = attributes['first_timepoint']
     id_attribute = attributes['id_attribute']
     states = np.unique(np.concatenate((df[time_attributes[1]].unique(), df[time_attributes[2]].unique())))
-    print(states)
     
     # prepare empty transition matrices for higher order chains
     states, empty_dfs, col_list = order_and_prepare_states(states=states, time_attributes=time_attributes, start_at_order=start_at_order)
-    print(states)
 
     # determine best fitting markov chain order in entire dataset
     score, lld, found_order = determine_order_entire_dataset(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
@@ -24,11 +22,11 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     print(found_order)
 
     # calculate the parameters with the true order
-    freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
-                                                                        states=states, order=found_order, col_list=col_list, empty_dfs=empty_dfs)
-    print(new_order)
+    freqs, initial_freqs, probs, free_parameters, new_order = calculate_model_parameters(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
+                                                                                         states=states, order=found_order, col_list=col_list, empty_dfs=empty_dfs)
 
-    params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'empty_dfs': empty_dfs, 'col_list': col_list, 
+    params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'free_parameters': free_parameters,
+              'empty_dfs': empty_dfs, 'col_list': col_list, 
               'score': score, 'lld': lld, 'found_order': found_order, 'states': states}
 
     return params
@@ -44,17 +42,18 @@ def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_par
     # if not possible, the new order will be new_order
     if quality_measure in ['deltatv', 'omegatv', 'phiwrl']:
 
-        freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=subgroup, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
+        freqs, initial_freqs, probs, free_parameters, new_order = calculate_model_parameters(df=subgroup, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
                                                                             states=general_params['states'], order=general_params['found_order'], 
                                                                             col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
 
     else:
         
-        freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=subgroup, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
+        freqs, initial_freqs, probs, free_parameters, new_order = calculate_model_parameters(df=subgroup, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
                                                                             states=general_params['states'], order=start_at_order, 
                                                                             col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
-         
-    params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'new_order': new_order})
+
+    print(free_parameters)     
+    params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'free_parameters': free_parameters, 'new_order': new_order})
 
     '''
     # same for complement
@@ -78,33 +77,36 @@ def calculate_model_parameters(df=None, time_attributes=None, first_timepoint=No
 
     # sometimes the desired order cannot be calculated in the dataset
     # we will then see which order is possible and proceed with that order
-    freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+    freqs, df_additions, free_parameters, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
                                                                id_attribute=id_attribute, order=order, col_list=col_list, empty_dfs=empty_dfs)
-    initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                         id_attribute=id_attribute, order=new_order, col_list=col_list, empty_dfs=empty_dfs)
+    initial_freqs, free_parameters = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                         id_attribute=id_attribute, order=new_order, col_list=col_list, empty_dfs=empty_dfs, free_parameters=free_parameters)
     probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
 
-    return freqs, initial_freqs, probs, new_order
+    return freqs, initial_freqs, probs, free_parameters, new_order
 
 def determine_order_entire_dataset(df=None, time_attributes=None, first_timepoint=None, id_attribute=None, states=None, start_at_order=None, 
                                    col_list=None, empty_dfs=None, quality_measure=None, data_size=None):
 
     ## determine order of entire data set
-    freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+    freqs, df_additions, free_parameters, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
                                                                id_attribute=id_attribute, order=start_at_order, col_list=col_list, empty_dfs=empty_dfs)
 
-    initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
-                                         id_attribute=id_attribute, order=new_order, col_list=col_list, empty_dfs=empty_dfs)
+    initial_freqs, free_parameters = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
+                                         id_attribute=id_attribute, order=new_order, col_list=col_list, empty_dfs=empty_dfs, free_parameters=free_parameters)
+
     probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
 
     # we check possible orders from start_at_order down to order=1 (even if the true subgroup follow a zero order model)
     if quality_measure in ['deltatv', 'omegatv', 'phiwrl', 'phiwd']:        
         # use phiaic
         score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=new_order, 
-                                                                  stop_at_order=1, s=len(states), quality_measure='phiaic', data_size=data_size)
+                                                                  stop_at_order=1, s=len(states), quality_measure='phiaic', data_size=data_size,
+                                                                  free_parameters=free_parameters)
     else:
         score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=new_order, 
-                                                                  stop_at_order=1, s=len(states), quality_measure=quality_measure, data_size=data_size)
+                                                                  stop_at_order=1, s=len(states), quality_measure=quality_measure, data_size=data_size, 
+                                                                  free_parameters=free_parameters)
 
     return score, lld, found_order
 
@@ -113,6 +115,7 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
     s = len(states)
     freqs = {}
     data = df.copy()
+    free_parameters = {}
 
     # parameters given argument order
     # extra check if the length of the sequences is not enough to calculate a certain order
@@ -124,7 +127,7 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
         #print('have to change order')
     new_order = order
     #if new_order == 1:
-        #print(data[data['id'].isin(maxs[maxs.counter == 0].index.values)])
+        #print(data[data[id_attribute].isin(maxs[maxs.counter == 0].index.values)]) # this could happen if by accident not all descriptive attributes are on the sequence level
 
     if new_order == 1:
         lss = data[[time_attributes[1], time_attributes[2]]].pivot_table(index=time_attributes[1], columns=time_attributes[2], fill_value=0, aggfunc=len)
@@ -140,6 +143,11 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
 
         lss = data.loc[:, col_list[0:(o+1)]].pivot_table(index=col_list[0:(o)], columns=col_list[o], fill_value=0, aggfunc=len)
 
+    a = s**order - lss.shape[0]
+    b = s - lss.shape[1]
+    K = lss.shape[0] * (lss.shape[1]-1)
+    free_parameters[new_order] = {'a': a, 'b': b, 'K':K}
+
     if lss.shape != (s**new_order, s):
 
         if lss.shape[1] != s:
@@ -147,11 +155,10 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
             for state in add_states:
                 lss[state] = np.nan
         
-        if lss.shape[0] != s**order:
-            
+        if lss.shape[0] != s**order:         
             empty_lss = empty_dfs['empty_lss_' + str(order)]
-            lss = empty_lss.merge(lss, left_on=empty_lss.index.values, right_on=lss.index.values, how='left').drop(['key_0'], axis=1).set_index(empty_lss.index).fillna(0)
- 
+            lss = empty_lss.merge(lss, left_on=empty_lss.index.values, right_on=lss.index.values, how='left').drop(['key_0'], axis=1).set_index(empty_lss.index).fillna(0)      
+
     lss.sort_index(axis=1, inplace=True)
     lss.sort_index(axis=0, inplace=True)
 
@@ -165,27 +172,42 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
         new_lss.sort_index(axis=1, inplace=True)
         new_lss.sort_index(axis=0, inplace=True)
         freqs['freq_' + str(o)] = new_lss
+
+        # calculate free parameters
+        sums_columns = new_lss.sum(axis=0)
+        b = len(sums_columns[sums_columns == 0])
+        sums_rows = new_lss.gt(0).sum(axis=1)
+        a = len(sums_rows[sums_rows == 0]) # theoretically you could even further reduce this to < 2 because rows with just 1 value have a probability of 1 and zero free parameters
+        K = (new_lss.shape[0]-a) * (new_lss.shape[1]-1-b)
+        free_parameters[o] = {'a': a, 'b': b, 'K':K}
+
+        # next round
         lss = new_lss.copy()
-        o -= 1 
-
+        o -= 1   
+        
     # for normalized initial probs
-    freqs['freq_0'] = pd.DataFrame(lss.sum(axis=1))
+    freq0 = pd.DataFrame(lss.sum(axis=1))
+    freqs['freq_0'] = freq0
+    a = len(freq0[freq0.values == 0])
+    K = len(freq0)-a-1
+    free_parameters[0] = {'a': a, 'b': np.nan, 'K':K}
+    
+    return freqs, data, free_parameters, new_order
 
-    return freqs, data, new_order
-
-def initial_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None, id_attribute=None, order=None, col_list=None, empty_dfs=None):
+def initial_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None, id_attribute=None, order=None, col_list=None, empty_dfs=None, free_parameters=None):
 
     initial_freqs = {}
     s = len(states)
 
     # calculate initial freqs for timepoint 0
     ls1 = df[df[time_attributes[0]] == first_timepoint][time_attributes[1]].value_counts()
-    if (ls1.sum() == 0):
+    if (ls1.sum() == 0): # this should not be possible
         print('ls1 sum 0', ls1)
         print(df)
     add_states = list(set(states) - set(ls1.index.tolist()))
     ls1 = ls1.append(pd.Series(np.repeat(0, len(add_states)), index=add_states)).sort_index(axis=0)
     initial_freqs['freq_' + str(0)] = pd.DataFrame(ls1).sort_index()
+    free_parameters[-1] = {'a': len(add_states), 'b': np.nan, 'K': s-len(add_states)-1}
 
     if order > 1:
 
@@ -213,7 +235,7 @@ def initial_count_matrix(df=None, time_attributes=None, states=None, first_timep
             
             initial_freqs['freq_' + str(o)] = lss  
 
-    return initial_freqs
+    return initial_freqs, free_parameters
 
 def calculate_model_probs(freqs=None, s=None, order=None):
 

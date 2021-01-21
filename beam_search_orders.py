@@ -63,7 +63,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
             for desc in seed_set:
 
-                #print(desc['description'])
+                print(desc['description'])
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:
