@@ -14,7 +14,7 @@ def read_data(dataset=None, attributes=None):
     dt_atts = []
 
     if attributes['time_attributes'] is not None:
-        drop_cols = attributes['time_attributes']
+        drop_cols = attributes['time_attributes'].copy()
     else: 
         drop_cols = []
 

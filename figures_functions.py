@@ -40,9 +40,10 @@ def visualize_probs(tA=None, tpi=None, states=None, order=None, y_names=None, ti
 
     tpi_reshape = np.array(tpi.values).reshape(1,len(tpi.values))
 
-    states = list(states)
-    x_names = ['start'] + states
-    y_names = list(y_names) #[('start')] + list(y_names)
+    x_names = states
+    #states = list(states)
+    #x_names = states #['start'] + states
+    #y_names = list(y_names) #[('start')] + list(y_names)
 
     # create a 2 X 2 grid 
     if order == 1:

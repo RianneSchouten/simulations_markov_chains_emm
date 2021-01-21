@@ -26,7 +26,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, stop_at_order=stop_at_order, 
                                                       quality_measure=quality_measure)
-    #print(general_params)
+    print(general_params)
 
     candidate_queue, nominal_values  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                                        bin_atts=bin_atts, nom_atts=nom_atts, 

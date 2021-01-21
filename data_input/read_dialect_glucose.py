@@ -54,6 +54,7 @@ def read_dialect_glucose(name_dataset=None, type_states=None):
         data = data.append(ptnum)
 
     summary = data.describe(include='all')
+    print(data.groupby('seq_length')['Pt nr'].nunique())
 
     # for the refinements later on it is useful to have the indices sorted
     data.reset_index(drop=True, inplace=True)
@@ -102,6 +103,7 @@ def read_dialect_descriptives(name_dataset=None):
     #    plt.xlabel(column)
     #    plt.show()
 
+    # we fill missing values with mode or mean since there are only a few missing values
     columns_and_missings = data.isnull().sum()
     columns_with_missings = columns_and_missings[columns_and_missings != 0].index.values
     for column in columns_with_missings:
@@ -205,6 +207,7 @@ def ranges_from_glucose(glucose_data=None, type_states=None):
 
         glucose_data['State1'] = state_column        
         range_data = glucose_data.copy()
+        #print(range_data.head(50))
 
     first_timepoint = 0
     time_attributes = ['Timepoints']   

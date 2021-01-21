@@ -11,10 +11,12 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
          
     data, attributes, combinations = rwdto.load(name_dataset=name_dataset)  
 
-    print('attributes', attributes)
     print('data', data.tail(20))
-    print(data.isnull().sum().sum())
+    print('attributes', attributes)
+    print(data.dtypes)
+    print(data.isnull().sum())
     print(data.shape)
+    print(data.groupby('seq_length')['id'].nunique())
    
     if save_location is not None:
         save_location_total = save_location + name_dataset + '_' + str(seed)
@@ -40,10 +42,10 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
 
 if __name__ == '__main__':
 
-    main(name_dataset='studyportals',
+    main(name_dataset='wikispeedia',
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
+         w=20, d=5, q=25, m=None, Z=None, seed=20210120,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1,

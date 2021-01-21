@@ -11,9 +11,11 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     first_timepoint = attributes['first_timepoint']
     id_attribute = attributes['id_attribute']
     states = np.unique(np.concatenate((df[time_attributes[1]].unique(), df[time_attributes[2]].unique())))
+    print(states)
     
     # prepare empty transition matrices for higher order chains
     states, empty_dfs, col_list = order_and_prepare_states(states=states, time_attributes=time_attributes, start_at_order=start_at_order)
+    print(states)
 
     # determine best fitting markov chain order in entire dataset
     score, lld, found_order = determine_order_entire_dataset(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
@@ -24,6 +26,7 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     # calculate the parameters with the true order
     freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
                                                                         states=states, order=found_order, col_list=col_list, empty_dfs=empty_dfs)
+    print(new_order)
 
     params = {'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'empty_dfs': empty_dfs, 'col_list': col_list, 
               'score': score, 'lld': lld, 'found_order': found_order, 'states': states}
@@ -109,27 +112,33 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
 
     s = len(states)
     freqs = {}
+    data = df.copy()
 
     # parameters given argument order
     # extra check if the length of the sequences is not enough to calculate a certain order
-    maxs = df.loc[:, [id_attribute, time_attributes[0]]].pivot_table(index=[id_attribute], values=[time_attributes[0]], aggfunc=np.max)
+    maxs = data.loc[:, [id_attribute, time_attributes[0]]].pivot_table(index=[id_attribute], values=[time_attributes[0]], aggfunc=np.max)
     min_T = int(min(maxs.iloc[:, -1]) - first_timepoint)
     if min_T + 1 < order:
         order = min_T + 1
         #print('new order', order)
         #print('have to change order')
     new_order = order
+    #if new_order == 1:
+        #print(data[data['id'].isin(maxs[maxs.counter == 0].index.values)])
 
     if new_order == 1:
-        lss = df[[time_attributes[1], time_attributes[2]]].pivot_table(index=time_attributes[1], columns=time_attributes[2], fill_value=0, aggfunc=len)
+        lss = data[[time_attributes[1], time_attributes[2]]].pivot_table(index=time_attributes[1], columns=time_attributes[2], fill_value=0, aggfunc=len)
 
     else:
-        ids = df[id_attribute].unique()
+        ids = data[id_attribute].unique()
         for o in np.arange(2, new_order+1):   
-            out = list(map(lambda x: df.loc[(df[id_attribute] == x), time_attributes[2]].shift(periods=-(o-1)), ids))                         
-            df[col_list[o]] = np.concatenate(out)
+            out = list(map(lambda x: data.loc[(data[id_attribute] == x), time_attributes[2]].shift(periods=-(o-1)), ids))
+            #print(col_list)
+            #print(col_list[o])
+            #print(df.shape)                   
+            data[col_list[o]] = np.concatenate(out)
 
-        lss = df.loc[:, col_list[0:(o+1)]].pivot_table(index=col_list[0:(o)], columns=col_list[o], fill_value=0, aggfunc=len)
+        lss = data.loc[:, col_list[0:(o+1)]].pivot_table(index=col_list[0:(o)], columns=col_list[o], fill_value=0, aggfunc=len)
 
     if lss.shape != (s**new_order, s):
 
@@ -162,7 +171,7 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
     # for normalized initial probs
     freqs['freq_0'] = pd.DataFrame(lss.sum(axis=1))
 
-    return freqs, df, new_order
+    return freqs, data, new_order
 
 def initial_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None, id_attribute=None, order=None, col_list=None, empty_dfs=None):
 

@@ -671,6 +671,8 @@ data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorde
 data_09 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_10 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 
+total_reps = 10 + 10 + 10
+
 length_new_column = 1 * 4 * 10 * 1 * 3 * 3 * 3
 long_data_omegatv <- data_omegatv %>%
   pivot_longer(
@@ -770,5 +772,164 @@ ranks <- plot_data %>%
 ranks
 
 name <- paste('../figures/Figures_manuscript/ranks_20ncovs.eps', sep = "", collapse = NULL)
+ggsave(name, width = 20, height = 30, units = "cm")
+
+plot_data <- long_data %>%
+  filter(N == 100) %>%
+  filter(ncovs == 20) %>%
+  filter(type == 'order') %>%
+  group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
+  summarize(perc_true_order = 
+              100 * sum(subgroup_orders == 
+                          value, na.rm = TRUE) / total_reps)
+
+orders <- plot_data %>%
+  ggplot(aes(x = true_subgroup_order, y = perc_true_order, fill = states)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  facet_grid(measure ~ timepoints, labeller = label_both) + 
+  labs(title = paste('Percentage of nreps where the true subgroup order is found', 
+                     sep = " ", collapse = NULL)) +
+  xlab('true subgroup order') + 
+  ylab('') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        #axis.title.y = element_text(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) + 
+  scale_fill_manual(values=c("#deebf7", "#9ecae1", "#3182bd"))
+
+orders
+
+name <- paste('../figures/Figures_manuscript/orders_20ncovs.eps', sep = "", collapse = NULL)
+ggsave(name, width = 20, height = 30, units = "cm")
+
+# subgroups of order 0
+
+data <- read_excel("../data_output/results_manuscript/experiment_zero_order_subgroups_20210112_10nreps_[100, 500, 1000]_[10, 5, 2]_[10, 5, 2]_[20, 10, 5].xlsx")
+head(data)
+
+length_new_column <- 6 * 1 * 10 * 3 * 3 * 3 * 3
+data <- data %>%
+  pivot_longer(
+    cols = names(data)[9:dim(data)[2]],
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure))
+
+long_data <- data %>%
+  arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
+          as.integer(ncovs), as.integer(subgroup_orders)) %>%
+  mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
+  mutate(states = ordered(factor(S), 
+                          levels = as.character(sort(as.integer(unique(S)))))) %>%
+  mutate(timepoints = ordered(factor(T), 
+                              levels = as.character(sort(as.integer(unique(T)))))) %>%
+  mutate(ncovs = ordered(factor(ncovs), 
+                         levels = as.character(sort(as.integer(unique(ncovs)))))) %>%
+  mutate(N = ordered(factor(N), 
+                     levels = as.character(sort(as.integer(unique(N)))))) %>%
+  mutate(measure = ordered(factor(measure), 
+                           levels = c('phibic', 'phiaic', 'phiaicc', 'phiwd', 'omegatv', 'phiwrl')))
+
+# two figures
+
+plot_data <- long_data %>%
+  filter(states == 5)
+
+ranks <- plot_data %>%
+  filter(type == 'rank') %>%
+  ggplot(aes(y = value, x = N)) +
+  geom_boxplot(aes(fill = ncovs), outlier.shape = NA) +
+  facet_grid(measure ~ timepoints, labeller = label_both) + 
+  labs(title = paste('Boxplots of the rank of the true subgroup', 
+                     sep = " ", collapse = NULL),
+       fill = 'ncovs') + 
+  xlab('true subgroup order') + 
+  ylab('') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        #axis.title.y = element_text(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) + 
+  scale_fill_manual(values=c("#e5f5e0", "#a1d99b", "#31a354"))
+
+ranks
+
+name <- paste('../figures/Figures_manuscript/ranks_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
+ggsave(name, width = 20, height = 30, units = "cm")
+
+# order data
+
+orders <- plot_data %>% 
+  filter(type == 'order') %>%
+  group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
+  summarize(perc_true_order = 
+              100 * sum(subgroup_orders == 
+                          value, na.rm = TRUE) / 10) %>%
+  ggplot(aes(x = N, y = perc_true_order, fill = ncovs)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  facet_grid(measure ~ timepoints, labeller = label_both) + 
+  labs(title = paste('Percentage of nreps where the true subgroup order is found', 
+                     sep = " ", collapse = NULL)) +
+  xlab('number of data sequences') + 
+  ylab('') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        #axis.title.y = element_text(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) + 
+  scale_fill_manual(values=c("#e5f5e0", "#a1d99b", "#31a354"))
+
+orders
+
+name <- paste('../figures/Figures_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
+ggsave(name, width = 20, height = 30, units = "cm")
+
+# true order
+
+found_orders <- plot_data %>% 
+  filter(type == 'found_order') %>%
+  group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
+  summarize(perc_true_order = 
+              100 * sum(subgroup_orders == 
+                          value, na.rm = TRUE) / 10) %>%
+  ggplot(aes(x = N, y = perc_true_order, fill = ncovs)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  facet_grid(measure ~ timepoints, labeller = label_both) + 
+  labs(title = paste('Percentage of nreps where the true subgroup order is found', 
+                     sep = " ", collapse = NULL)) +
+  xlab('number of data sequences') + 
+  ylab('') +
+  guides(fill = guide_legend(direction = "horizontal")) +
+  theme(legend.position="top",
+        legend.justification="right",
+        plot.title = element_text(vjust=-4), 
+        legend.box.margin = margin(-1,0,0,0, "line"),
+        #axis.title.y = element_text(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) + 
+  scale_fill_manual(values=c("#e5f5e0", "#a1d99b", "#31a354"))
+
+orders
+
+name <- paste('../figures/Figures_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 30, units = "cm")
 

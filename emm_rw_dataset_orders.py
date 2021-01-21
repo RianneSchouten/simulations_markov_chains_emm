@@ -63,8 +63,13 @@ def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribut
 def load(name_dataset=None):
 
     location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
-    #location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
     sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
+
+    #location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
+    #sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'unique_per_seq_length', 'df_attributes', 'combinations'], index_col=0)
+
+    #location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
+    #sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
 
     data = sheets['data']
     df_attributes = sheets['df_attributes']
@@ -80,8 +85,6 @@ def load(name_dataset=None):
     attributes = {'time_attributes': time_attributes, 'skip_attributes': skip_attributes,
                   'id_attribute': id_attribute, 'first_timepoint': first_timepoint, 
                   'outcome_attribute': outcome_attribute}
-
-    print(data.dtypes)
 
     return data, attributes, combinations
 
