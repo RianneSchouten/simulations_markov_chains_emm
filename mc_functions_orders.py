@@ -57,10 +57,7 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
             print(refll)
             print(refscore)
 
-        if ref in ['dataset', 'complement']:
-            qm = score - refscore
-        elif ref == 'addition':
-            qm = score + refscore        
+        qm = score - refscore      
 
         return qm, score, llsg, sg_order
 
@@ -73,21 +70,6 @@ def calculate_reference_score(ref=None, general_params=None, subgroup_params=Non
         score = calculate_score(ll=ll, quality_measure=quality_measure, order=general_params['found_order'], s=len(general_params['states']), 
                                 data_size=subgroup_params['sg_size'], print_this=print_this)
         return ll, score
-    
-    '''
-    elif ref == 'complement':
-        # sg on complement
-        ll, ll_list = calculate_log_likelihood(probs=subgroup_params['probs_compl'], freqs=subgroup_params['freqs'], 
-                                               initial_freqs=subgroup_params['initial_freqs'], ll_list=None, order=1, s=len(general_params['states']))
-        score = calculate_score(ll=ll, quality_measure=quality_measure, order=1, s=len(general_params['states']), data_size=subgroup_params['sg_size'])
-        return ll, score
-
-    elif ref == 'addition':
-        ll, ll_list = calculate_log_likelihood(probs=subgroup_params['probs_compl'], freqs=subgroup_params['freqs_compl'], 
-                                               initial_freqs=subgroup_params['initial_freqs_compl'], ll_list=None, order=1, s=len(general_params['states']))
-        score = calculate_score(ll=ll, quality_measure=quality_measure, order=1, s=len(general_params['states']), data_size=subgroup_params['sg_size_compl'])
-        return ll, score
-    '''
 
 def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, start_at_order=None, stop_at_order=None,
                                  s=None, quality_measure=None, data_size=None, print_this=None):

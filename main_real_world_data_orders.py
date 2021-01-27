@@ -16,7 +16,6 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
     print(data.dtypes)
     print(data.isnull().sum())
     print(data.shape)
-    print(data.groupby('seq_length')['id'].nunique())
    
     if save_location is not None:
         save_location_total = save_location + name_dataset + '_' + str(seed)
@@ -42,26 +41,14 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
 
 if __name__ == '__main__':
 
-    main(name_dataset='wikispeedia',
+    main(name_dataset='TIRpatientendata_2', 
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210121,
-         ref='dataset', start_at_order=3,
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=1,
-         save_location='./data_output/')
-
-    '''
-    main(name_dataset='TIRpatientendata_2',  
-         #name_dataset='studyportals',
-         calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=1, q=25, m=None, Z=None, seed=20210121,
+         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=0,
-         save_location='./data_output/')
-    '''
+         stop_at_order=1, save_location='./data_output/')
+
     '''
     main(name_dataset='TIRpatientendata_1', 
          calculate_distribution=False, use_distribution=False,
@@ -69,6 +56,5 @@ if __name__ == '__main__':
          w=20, d=3, q=25, m=None, Z=None, seed=20210114,
          ref='dataset', start_at_order=2,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=0,
-         save_location='./data_output/')
+         stop_at_order=1, save_location='./data_output/')
     '''

@@ -54,22 +54,6 @@ def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_par
 
     params.update({'freqs': freqs, 'initial_freqs': initial_freqs, 'probs': probs, 'new_order': new_order})
 
-    '''
-    # same for complement
-    # complement always has order 1 (or actually, the order that best fits the complement, which theoretically should be order 1)
-    # not necessary if we compare with the dataset
-    if ref != 'dataset':
-        freqs_compl, sg_compl_additions, new_order = higher_order_count_matrix(df=subgroup_compl, time_attributes=time_attributes, states=general_params['states'], 
-                                                                               first_timepoint=first_timepoint, id_attribute=attributes['id_attribute'], order=1, 
-                                                                               col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
-
-        initial_freqs_compl = initial_count_matrix(df=sg_compl_additions, time_attributes=time_attributes, states=general_params['states'], first_timepoint=first_timepoint,
-                                                   id_attribute=attributes['id_attribute'], order=1, col_list=general_params['col_list'], empty_dfs=general_params['empty_dfs'])
-
-        probs_compl = calculate_model_probs(freqs=freqs_compl, s=len(general_params['states']), order=1)
-        params.update({'freqs_compl': freqs_compl, 'initial_freqs_compl': initial_freqs_compl, 'probs_compl': probs_compl, 'new_order': new_order})
-    '''
-
     return params
 
 def calculate_model_parameters(df=None, time_attributes=None, first_timepoint=None, id_attribute=None, states=None, order=None, col_list=None, empty_dfs=None):
@@ -140,13 +124,6 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
 
         lss = data.loc[:, col_list[0:(o+1)]].pivot_table(index=col_list[0:(o)], columns=col_list[o], fill_value=0, aggfunc=len)
 
-    '''
-    a = s**order - lss.shape[0]
-    b = s - lss.shape[1]
-    K = lss.shape[0] * (lss.shape[1]-1)
-    free_parameters[new_order] = {'a': a, 'b': b, 'K':K}
-    '''
-
     if lss.shape != (s**new_order, s):
 
         if lss.shape[1] != s:
@@ -172,16 +149,6 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
         new_lss.sort_index(axis=0, inplace=True)
         freqs['freq_' + str(o)] = new_lss
 
-        '''
-        # calculate free parameters
-        sums_columns = new_lss.sum(axis=0)
-        b = len(sums_columns[sums_columns == 0])
-        sums_rows = new_lss.gt(0).sum(axis=1)
-        a = len(sums_rows[sums_rows == 0]) # theoretically you could even further reduce this to < 2 because rows with just 1 value have a probability of 1 and zero free parameters
-        K = (new_lss.shape[0]-a) * (new_lss.shape[1]-1-b)
-        free_parameters[o] = {'a': a, 'b': b, 'K':K}
-        '''
-
         # next round
         lss = new_lss.copy()
         o -= 1   
@@ -189,11 +156,6 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
     # for normalized initial probs
     freq0 = pd.DataFrame(lss.sum(axis=1))
     freqs['freq_0'] = freq0
-    '''
-    a = len(freq0[freq0.values == 0])
-    K = len(freq0)-a-1
-    free_parameters[0] = {'a': a, 'b': np.nan, 'K':K}
-    '''
     
     return freqs, data, new_order
 
