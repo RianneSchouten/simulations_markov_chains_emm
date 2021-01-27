@@ -1,8 +1,8 @@
 # simulations_beam_search_markov_chain
 
-This repository contains all code for running the experiments in the manuscript `', submitted to the journal Data Mining and Knowledge Discovery (DMKD) on January 31st 2021. 
+This repository contains the code for the experiments in the manuscript `Mining sequences with exceptional transition behaviour of varying order using quality measures based on information-theoretic scoring functions', submitted to the journal Data Mining and Knowledge Discovery (DMKD) on January 31st 2021. 
 
-The files are the result of a long development period, and you will therefore also find files and results for the Work In Progress paper `' presented at the PhD Forum at ECML-PKDD 2020, and for a draft version of the manuscript mentioned above.
+The files are the result of a long development period, and you will therefore also find files and results for the Work In Progress paper `mining exceptional sequences using log likelihood based quality measures' presented at the PhD Forum at ECML-PKDD 2020, and for a draft version of the manuscript mentioned above.
 
 The scripts for the extended beam_search algorithm, the synthetic data exeperiments, and the analysis of real-world data can all directly be found in the repository. Start with:
 
