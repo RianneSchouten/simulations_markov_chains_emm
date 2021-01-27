@@ -9,6 +9,11 @@ import read_dna as rdna
 import read_wikispeedia as rw
 import read_dialect_glucose as rdg
 
+# dialect
+#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=1)
+#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=2)
+
+# other datasets
 # callcenter example
 # from fluxicon
 #data, time_attributes, skip_attributes, id_attribute, first_timepoint, descriptives = rce.read_callcenter_example(name_dataset='callcenter_example')
@@ -26,11 +31,7 @@ import read_dialect_glucose as rdg
 #data, attributes, combinations = rdna.read_dna(name_dataset='dna')
 
 # wikispeedia
-data, attributes, combinations = rw.read_wikispeedia(name_dataset='wikispeedia')
-
-# dialect
-#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=1)
-#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=2)
+#data, attributes, combinations = rw.read_wikispeedia(name_dataset='wikispeedia')
 
 print('attributes', attributes)
 print('data', data.head(10))
