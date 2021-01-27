@@ -10,19 +10,23 @@ def read_wikispeedia(name_dataset=None):
 
     print('feature processing')
     data_enriched, id_attribute, time_attributes, first_timepoint = feature_processing(data=imported_data)
-    data_selected = make_selection(data=data_enriched, name_dataset=name_dataset)  
-
+    
     print('add categories')
     categories = import_categories(name_dataset=name_dataset)
-    full_data = join_categories(data=data_selected, categories=categories)
+    full_data = join_categories(data=data_enriched, categories=categories)
+
+    full_data_selected = make_selection(data=full_data, name_dataset=name_dataset)  
 
     # right format
-    data, time_attributes = create_two_time_columns(data=full_data, first_timepoint=first_timepoint, time_attributes=time_attributes)
+    data, time_attributes = create_two_time_columns(data=full_data_selected, first_timepoint=first_timepoint, time_attributes=time_attributes)
     print(data)
     print(data.dtypes)
-    print(data.shape)
 
-    skip_attributes = ['path', 'timestamp']
+    skip_attributes = ['path', 'timestamp', 'seq_length', 'nr_distinct_states']
+    print(data.shape)
+    #data = data[(data['finished'] == 1)]
+    print(data.shape)
+    print(data.groupby('seq_length')[id_attribute].nunique())
 
     # to ensure selection of subgroup
     data.sort_values(['id', 'counter'], ascending=[True, True]).reset_index(drop=True, inplace=True)
@@ -96,8 +100,22 @@ def feature_processing(data=None):
     print(data_clean.shape)
     print('total number of users', len(data_clean['id'].unique()))
 
+    # info about time
+    data_clean['year'] = [time.gmtime(x)[0] for x in data_clean['timestamp'].values]
+    print(data_clean)
+
+    first_timepoint = 0   
+    id_attribute = 'id'
+    time_attributes = ['counter', 'category1'] 
+
+    return data_clean, id_attribute, time_attributes, first_timepoint
+
+def make_selection(data=None, name_dataset=None):    
+
+    data.corr().to_excel('C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_correlation.xlsx')
+
     # info about sequences
-    data_enriched = data_clean.copy()
+    data_enriched = data.copy()
     counts = data_enriched['id'].value_counts().sort_index() # same order as in dataset
     first_timepoint = 0
     one_to_length = list(map(lambda x: np.arange(start = first_timepoint, stop = x+first_timepoint), counts.values))
@@ -106,28 +124,16 @@ def feature_processing(data=None):
     data_enriched['seq_length'] = np.concatenate(lengths).ravel()
     print(data_enriched)
 
-    # remove length 1 sequences
+    # remove length 1 and 2 sequences
     print(data_enriched.groupby('seq_length')['id'].nunique())
     data_selected = data_enriched.drop(data_enriched[data_enriched['seq_length'] < 3].index.values).copy()
     print(data_selected.groupby('seq_length')['id'].nunique())
     print(data_selected.shape)
     print('number of users', len(data_selected['id'].unique()))
 
-    # info about time
-    data_selected['year'] = [time.gmtime(x)[0] for x in data_selected['timestamp'].values]
-    print(data_selected)
-
-    first_timepoint = 0   
-    id_attribute = 'id'
-    time_attributes = ['counter', 'category1'] 
-
-    return data_selected, id_attribute, time_attributes, first_timepoint
-
-def make_selection(data=None, name_dataset=None):    
-
-    data.corr().to_excel('C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_correlation.xlsx')
+    data_selected_processed = data_selected.sort_values(['id', 'counter'], ascending=[True, True]).reset_index(drop=True)
     
-    return data
+    return data_selected_processed
 
 def import_categories(name_dataset=None):
 
@@ -165,11 +171,10 @@ def join_categories(data=None, categories=None):
     print(len(full_data['id'].unique()))
 
     full_data = full_data.drop(columns=['article_x', 'article_y', 'rank'])
-    full_data_processed = full_data.sort_values(['id', 'counter'], ascending=[True, True]).reset_index(drop=True)
-
+    
     # add features about categories
-    nr_categories = full_data_processed.groupby(['id']).nunique()['category']
-    data = full_data_processed.merge(nr_categories, left_on='id', right_index=True, how='left')
+    nr_categories = full_data.groupby(['id']).nunique()['category']
+    data = full_data.merge(nr_categories, left_on='id', right_index=True, how='left')
     data = data.rename(columns={"category_x": "category1", "category_y": "nr_distinct_states"})
 
     return data 

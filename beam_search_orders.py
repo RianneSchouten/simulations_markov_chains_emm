@@ -16,17 +16,17 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
-    print(bin_atts)
-    print(nom_atts)
-    print(num_atts)
-    print(dt_atts)
+    #print(bin_atts)
+    #print(nom_atts)
+    #print(num_atts)
+    #print(dt_atts)
     #print(df.describe(include='all'))
 
     # Calculate general parameters
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, stop_at_order=stop_at_order, 
                                                       quality_measure=quality_measure)
-    print(general_params)
+    #print(general_params)
 
     candidate_queue, nominal_values  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -44,7 +44,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         n_small_groups = 0
         n_redundant_coverage = 0
         
-        print('level:', d_i)
+        #print('level:', d_i)
 
         cq_satisfied = []
         for seed in candidate_queue:
@@ -63,7 +63,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
 
             for desc in seed_set:
 
-                print(desc['description'])
+                #print(desc['description'])
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:

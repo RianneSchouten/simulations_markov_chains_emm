@@ -11,7 +11,6 @@ def calculate_quality_values(general_params=None, subgroup_params=None, quality_
     
     quality_values[quality_measure] = np.round(qm, 2)
     quality_values['best_order'] = sg_order
-    print(sg_order)
     quality_values['llsg'] = np.round(llsg, 2)
     quality_values['score'] = score
 
@@ -41,7 +40,7 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
 
         score, llsg, sg_order = calculate_best_fitting_order(probs=subgroup_params['probs'], freqs=subgroup_params['freqs'], initial_freqs=subgroup_params['initial_freqs'],
                                                              start_at_order=start_at_order, stop_at_order=stop_at_order, s=len(general_params['states']), print_this=print_this,
-                                                             quality_measure=quality_measure, data_size=subgroup_params['sg_size'], free_parameters=subgroup_params['free_parameters'])
+                                                             quality_measure=quality_measure, data_size=subgroup_params['sg_size'])
         # calculate reference likelihood
         refll, refscore = calculate_reference_score(ref=ref, general_params=general_params, subgroup_params=subgroup_params, 
                                                     quality_measure=quality_measure, print_this=print_this)
@@ -51,7 +50,7 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
             print(general_params['found_order'])
             print(subgroup_params['initial_freqs'])
             print(subgroup_params['freqs'])
-               
+        
         if print_this:
             print('reference')
             print(start_at_order)
@@ -72,7 +71,7 @@ def calculate_reference_score(ref=None, general_params=None, subgroup_params=Non
         ll, ll_list = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs'], print_this=print_this,
                                                initial_freqs=subgroup_params['initial_freqs'], ll_list=None, order=general_params['found_order'], s=len(general_params['states']))
         score = calculate_score(ll=ll, quality_measure=quality_measure, order=general_params['found_order'], s=len(general_params['states']), 
-                                data_size=subgroup_params['sg_size'], free_parameters=general_params['free_parameters'] ,print_this=print_this)
+                                data_size=subgroup_params['sg_size'], print_this=print_this)
         return ll, score
     
     '''
@@ -91,13 +90,13 @@ def calculate_reference_score(ref=None, general_params=None, subgroup_params=Non
     '''
 
 def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, start_at_order=None, stop_at_order=None,
-                                 s=None, quality_measure=None, data_size=None, free_parameters=None, print_this=None):
+                                 s=None, quality_measure=None, data_size=None, print_this=None):
 
     o = start_at_order
     #print(o)
 
     ll, ll_list = calculate_log_likelihood(probs=probs, freqs=freqs, initial_freqs=initial_freqs, ll_list=None, order=o, s=s, print_this=print_this)
-    score = calculate_score(ll=ll, quality_measure=quality_measure, order=o, s=s, data_size=data_size, free_parameters=free_parameters, print_this=print_this)
+    score = calculate_score(ll=ll, quality_measure=quality_measure, order=o, s=s, data_size=data_size, print_this=print_this)
 
     o -= 1
     # if testing for a subgroup with order = 0, then set stop_at_order to 0
@@ -105,7 +104,8 @@ def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, sta
     while o > (last_order-1):
 
         ll_lower_order, ll_list = calculate_log_likelihood(probs=probs, freqs=freqs, initial_freqs=initial_freqs, ll_list=ll_list, order=o, s=s, print_this=print_this)
-        score_lower_order = calculate_score(ll=ll_lower_order, quality_measure=quality_measure, order=o, s=s, data_size=data_size, free_parameters=free_parameters, print_this=print_this)
+        score_lower_order = calculate_score(ll=ll_lower_order, quality_measure=quality_measure, order=o, s=s, data_size=data_size, print_this=print_this)
+
         if print_this:
             print(start_at_order)
             print(ll)
@@ -126,15 +126,12 @@ def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, sta
 
     return score, ll, o+1
 
-def calculate_score(ll=None, quality_measure=None, order=None, s=None, data_size=None, free_parameters=None, print_this=None):
+def calculate_score(ll=None, quality_measure=None, order=None, s=None, data_size=None, print_this=None):
 
     if order == 0:
-        #K = (s-1) + ((s**1) * (s-1)) # we add extra s-1 parameters for the initial probs
-        K = free_parameters[-1]['K'] + free_parameters[1]['K']
+        K = (s-1) + ((s**1) * (s-1)) # we add extra s-1 parameters for the initial probs
     else:
-        K = free_parameters[order]['K']
-        print(K)
-        #K = ((s**order) * (s-1))
+        K = ((s**order) * (s-1))
     
     size = data_size['seq_plus_transitions']
 

@@ -670,8 +670,9 @@ data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorde
 
 data_09 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_10 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_11 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 
-total_reps = 10 + 10 + 10
+total_reps = 10 + 10 + 10 + 10
 
 length_new_column = 1 * 4 * 10 * 1 * 3 * 3 * 3
 long_data_omegatv <- data_omegatv %>%
@@ -682,17 +683,17 @@ long_data_omegatv <- data_omegatv %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
   mutate(measure = gsub("_.*", "", measure))
 
-long_data_phiwd <- data_phiwrl %>%
+long_data_phiwd <- data_phiwd %>%
   pivot_longer(
-    cols = names(data_phiwrl)[9:dim(data_phiwrl)[2]],
+    cols = names(data_phiwd)[9:dim(data_phiwd)[2]],
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
   mutate(measure = gsub("_.*", "", measure))
 
-long_data_phiwrl <- data_omegatv %>%
+long_data_phiwrl <- data_phiwrl %>%
   pivot_longer(
-    cols = names(data_omegatv)[9:dim(data_omegatv)[2]],
+    cols = names(data_phiwrl)[9:dim(data_phiwrl)[2]],
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
@@ -724,9 +725,24 @@ long_data_10 <- data_10 %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
   mutate(measure = gsub("_.*", "", measure))
 
-long_data <- rbind(long_data_omegatv, long_data_phiwd, long_data_phiwrl, 
-                   long_data_rest,
-                   long_data_09, long_data_10) %>%
+head(data_11)
+length_new_column = 6 * 4 * 10 * 1 * 3 * 3 * 3
+long_data_11 <- data_11 %>%
+  pivot_longer(
+    cols = names(data_11)[9:dim(data_11)[2]],
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure))
+sel_long_data_11 <- long_data_11[long_data_11$type != 'found_order', ]
+
+# calculate number of times found dataset order = 1
+sum(long_data_11[(long_data_11$type == 'found_order') &
+  (long_data_11$value == 1), 'value'])
+nrow(long_data_11[long_data_11$type == 'found_order', 'value'])
+
+long_data <- rbind(long_data_omegatv, long_data_rest,
+                   long_data_09, long_data_10, sel_long_data_11) %>%
   arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
           as.integer(ncovs), as.integer(subgroup_orders)) %>%
   mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
@@ -742,7 +758,6 @@ long_data <- rbind(long_data_omegatv, long_data_phiwd, long_data_phiwrl,
                            levels = c('phibic', 'phiaic', 'phiaicc', 'phiwd', 'omegatv', 'phiwrl')))
 
 # two figures
-
 plot_data <- long_data %>%
   filter(N == 100) %>%
   filter(ncovs == 20)
@@ -773,6 +788,14 @@ ranks
 
 name <- paste('../figures/Figures_manuscript/ranks_20ncovs.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 30, units = "cm")
+
+part_long <- long_data[(long_data$measure == 'omegatv') & 
+    (long_data$type == 'order') & 
+    (long_data$states == 2) & 
+    (long_data$T == 10) & 
+    (long_data$ncovs == 20) & 
+    (long_data$subgroup_orders == 1) & 
+    (long_data$true_subgroup_order == '1'), ]
 
 plot_data <- long_data %>%
   filter(N == 100) %>%

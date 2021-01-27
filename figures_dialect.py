@@ -73,7 +73,7 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
     # create a 1 X 2 grid 
     if order == 1:
 
-        fig = plt.figure(figsize=(8, 6), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(8, 6), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 2, width_ratios=[14,1], wspace=0.1)
 
         # image plot
@@ -91,7 +91,7 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
 
     elif order == 2:
 
-        fig = plt.figure(figsize=(8, 16), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(8, 16), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 2, width_ratios=[28,1])
 
         # image plot
@@ -110,7 +110,7 @@ def visualize_probs(tA=None, tpi=None, dif=None, states=None, order=None, title=
 
     elif order == 3:
 
-        fig = plt.figure(figsize=(8, 24), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(8, 24), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 2, width_ratios=[28,1])
 
         # image plot
@@ -138,7 +138,7 @@ def combined_visualize_probs(tA_subgroup=None, tA_data=None, dif=None, states=No
         x_names = [('start')] + list(states)
         y_names = [('start')] + list(states)
 
-        fig = plt.figure(figsize=(24, 6), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(24, 6), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 5, width_ratios=[14, 14, 1, 14, 1])
 
         # image plot
@@ -193,7 +193,7 @@ def combined_visualize_probs(tA_subgroup=None, tA_data=None, dif=None, states=No
         new_index = list(it.product(new_order_states, repeat=2))
         new_values_data = tA_data_new_columns.reindex(new_index)
 
-        fig = plt.figure(figsize=(18, 16), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(18, 16), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 3, width_ratios=[14, 14, 1])
 
         # image plot
@@ -234,7 +234,7 @@ def combined_visualize_probs(tA_subgroup=None, tA_data=None, dif=None, states=No
         dif_new_columns = dif[new_order_states]
         new_values_dif = dif_new_columns.reindex(new_index)
 
-        fig = plt.figure(figsize=(27, 16), dpi=80, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(27, 16), dpi=300, facecolor='w', edgecolor='k')
         gs = grd.GridSpec(1, 5, width_ratios=[14, 14, 1, 14, 1], wspace=0.4)
 
         # image plot
@@ -276,7 +276,6 @@ def combined_visualize_probs(tA_subgroup=None, tA_data=None, dif=None, states=No
 
     return fig
 
-'''
 # execute for data 1
 result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = load(name_dataset='TIRpatientendata_1_20210114_resultset')
 results = result_rw_analysis.copy()
@@ -290,7 +289,7 @@ general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols
 # figure general params
 fig = visualize_probs(tA=general_params['probs']['prob_1'], tpi=None, states=general_params['states'],
                       order=1, data_set=1,
-                      title='Parameters entire dataset', name_fig='figures/visualization_general.png')
+                      title='Parameters entire dataset', name_fig='figures/Figures_manuscript/dialect_set1/finished_figures/visualization_general.png')
 
 for sgn in [0,12]:
 
@@ -308,7 +307,7 @@ for sgn in [0,12]:
                                                      quals=quals, general_params=general_params)
 
     title = 'Parameters subgroup ' + str(sgn+1) 
-    name_fig = 'figures/visualization_' + str(sgn+1) + '_' + quality_measure + '.png'
+    name_fig = 'figures/Figures_manuscript/dialect_set1/finished_figures/visualization_' + str(sgn+1) + '_' + quality_measure + '.png'
     prob_name = 'prob_' + str(order)
     state_space = 'empty_lss_' + str(order)
     fig = visualize_probs(tA=subgroup_params['probs'][prob_name], tpi=None, states=general_params['states'], data_set=1,
@@ -316,7 +315,7 @@ for sgn in [0,12]:
 
     dif = subgroup_params['probs'][prob_name] - general_params['probs']['prob_1']
     title = 'Parameter difference of subgroup ' + str(sgn+1) 
-    name_fig = 'figures/visualization_difference' + str(sgn+1) + '_' + quality_measure + '.png'
+    name_fig = 'figures/Figures_manuscript/dialect_set1/finished_figures/visualization_difference' + str(sgn+1) + '_' + quality_measure + '.png'
     fig = visualize_probs(tA=dif, tpi=None, dif=True, states=general_params['states'], data_set=1,
                           order=order, title=title, name_fig=name_fig)
 
@@ -326,9 +325,8 @@ for sgn in [0,12]:
                                    order_data=1, data_set=1,
                                    title1='Parameters entire dataset (chart 1)', title2='Parameters subgroup ' + str(sgn+1) + ' (chart 2)', 
                                    title3='Difference in parameters subgroup ' + str(sgn+1) + ' (chart 2 - chart 1)', 
-                                   name_fig='figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
+                                   name_fig='figures/Figures_manuscript/dialect_set1/finished_figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
 
-'''
 
 # execute for data 2
 result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = load(name_dataset='TIRpatientendata_2_20210114_resultset')
@@ -337,15 +335,15 @@ results = result_rw_analysis.copy()
 dataset, attributes, combinations = rwdto.load(name_dataset='TIRpatientendata_2')  
 df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
 quality_measure = 'phiaic'
-order_data = 3
-general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=3, 
-                                                  start_at_order=3, quality_measure=quality_measure)
-print(general_params)
+order_data = 2
+general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=order_data, 
+                                                  start_at_order=order_data, quality_measure=quality_measure)
 
 # figure general params
-fig = visualize_probs(tA=general_params['probs']['prob_3'], tpi=None, states=general_params['states'], data_set=2,
-                      order=3, title='Parameters entire dataset', name_fig='figures/visualization_general.png')
-'''
+prob = 'prob_' + str(order_data)
+fig = visualize_probs(tA=general_params['probs'][prob], tpi=None, states=general_params['states'], data_set=order_data,
+                      order=order_data, title='Parameters entire dataset', name_fig='figures/Figures_manuscript/dialect_set2/finished_figures/visualization_general.png')
+
 for sgn in [0,3]:
 
     sg = results.loc[results.sg == sgn, ]
@@ -362,7 +360,7 @@ for sgn in [0,3]:
                                                      quals=quals, general_params=general_params)
 
     title = 'Parameters subgroup ' + str(sgn+1)
-    name_fig = 'figures/visualization_' + str(sgn+1) + '_' + quality_measure + '.png'
+    name_fig = 'figures/Figures_manuscript/dialect_set2/finished_figures/visualization_' + str(sgn+1) + '_' + quality_measure + '.png'
     prob_name = 'prob_' + str(order)
     state_space = 'empty_lss_' + str(order)
     fig = visualize_probs(tA=subgroup_params['probs'][prob_name], tpi=None, dif=None,
@@ -376,13 +374,13 @@ for sgn in [0,3]:
                                        tA_data=general_params['probs']['prob_2'], dif=None, states=general_params['states'], order=order, 
                                        order_data=2, data_set=2,
                                        title1='Parameters entire dataset', title2='Parameters subgroup ' + str(sgn+1), 
-                                       title3=None, name_fig='figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
+                                       title3=None, name_fig='figures/Figures_manuscript/dialect_set2/finished_figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
 
     elif order == 2 and order_data == 2:
         
         dif = subgroup_params['probs'][prob_name] - general_params['probs']['prob_2']
         title = 'Parameter difference of subgroup ' + str(sgn+1)
-        name_fig = 'figures/visualization_difference' + str(sgn+1) + '_' + quality_measure + '.png'
+        name_fig = 'figures/Figures_manuscript/dialect_set2/finished_figures/visualization_difference_' + str(sgn+1) + '_' + quality_measure + '.png'
         fig = visualize_probs(tA=dif, tpi=None, dif=True, states=general_params['states'], data_set=2,
                               order=order, title=title, name_fig=name_fig)
 
@@ -392,5 +390,5 @@ for sgn in [0,3]:
                                        order_data=2, data_set=2,
                                        title1='Parameters entire dataset (chart 1)', title2='Parameters subgroup ' + str(sgn+1) + ' (chart 2)', 
                                        title3='Difference in parameters subgroup ' + str(sgn+1) + ' (chart 2 - chart 1)', 
-                                       name_fig='figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
-'''
+                                       name_fig='figures/Figures_manuscript/dialect_set2/finished_figures/visualization_combined_' + str(sgn+1) + '_' + quality_measure + '.png')
+

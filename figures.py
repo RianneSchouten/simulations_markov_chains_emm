@@ -15,7 +15,7 @@ import mc_functions_orders as fo
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='bach_20210115_resultset')
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='movies_20210115_resultset')
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='dna_20210115_resultset')
-result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='wikispeedia_20210120_resultset')
+result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='wikispeedia_20210121_resultset')
 results = result_rw_analysis.copy()
 
 dataset, attributes, combinations = rwdto.load(name_dataset='wikispeedia')  
@@ -36,7 +36,7 @@ fig = ff.visualize_probs(tA=general_params['probs']['prob_1'], tpi=general_param
                          order=1, y_names=general_params['empty_dfs']['empty_lss_1'].index.values, 
                          title='General parameters', name_fig='figures/visualization_general.png')
 
-for sgn in np.arange(0, 25):
+for sgn in np.arange(0, 10):
 
     sg = results.loc[results.sg == sgn, ]
     desc = sg.iloc[0, ].dropna().drop(['sg']).to_dict()
