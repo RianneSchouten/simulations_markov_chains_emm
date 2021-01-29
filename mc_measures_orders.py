@@ -19,7 +19,7 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
     score, lld, found_order = determine_order_entire_dataset(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
                                                              states=states, col_list=col_list, empty_dfs=empty_dfs, data_size=data_size,
                                                              start_at_order=start_at_order, quality_measure=quality_measure)
-    print(found_order)
+    #print(found_order)
 
     # calculate the parameters with the true order
     freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,

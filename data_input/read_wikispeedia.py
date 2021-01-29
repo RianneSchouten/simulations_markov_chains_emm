@@ -171,6 +171,14 @@ def join_categories(data=None, categories=None):
     print(len(full_data['id'].unique()))
 
     full_data = full_data.drop(columns=['article_x', 'article_y', 'rank'])
+
+    print(full_data.groupby('category')['id'].nunique())
+
+    # change state-values
+    full_data['category'] = np.where(full_data['category'] == 'People', 'People', 
+                        np.where(full_data['category'] == 'Geography', 'Geography',
+                        np.where(full_data['category'] == 'Science', 'Science', 'Other')))
+    print(full_data.groupby('category')['id'].nunique())
     
     # add features about categories
     nr_categories = full_data.groupby(['id']).nunique()['category']

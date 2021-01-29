@@ -58,11 +58,11 @@ if __name__ == '__main__':
 
     # main analysis
     main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
-         quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
+         quality_measures=['omegatv', 'phiwrl'],
          w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
          start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         nreps=10, seed=20210115, ncovs=[20, 10, 5],
+         nreps=30, seed=20210128, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
 
     '''

@@ -15,14 +15,14 @@ import mc_functions_orders as fo
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='bach_20210115_resultset')
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='movies_20210115_resultset')
 #result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='dna_20210115_resultset')
-result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='wikispeedia_20210121_resultset')
-results = result_rw_analysis.copy()
+#result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = ff.load(name_dataset='wikispeedia_20210121_resultset')
+#results = result_rw_analysis.copy()
 
 dataset, attributes, combinations = rwdto.load(name_dataset='wikispeedia')  
 df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
 quality_measure = 'phiaic'
-general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=1, 
-                                                  start_at_order=1, quality_measure=quality_measure)
+general_params = qmo.calculate_general_parameters(df=df, distribution=None, cols=cols, attributes=attributes, order=2, 
+                                                  start_at_order=3, quality_measure=quality_measure)
 '''
 score, lld, found_order = fo.calculate_best_fitting_order(probs=general_params['probs'], freqs=general_params['freqs'], initial_freqs=general_params['initial_freqs'], start_at_order=4, 
                                                           s=len(general_params['states']), quality_measure=quality_measure, data_size=general_params['data_size'])

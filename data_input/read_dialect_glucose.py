@@ -9,6 +9,7 @@ def read_dialect_glucose(name_dataset=None, type_states=None):
 
     # read descriptives
     descriptive_data, skip_attributes, id_attribute, columns_and_missings = read_dialect_descriptives(name_dataset=name_dataset)
+    print(descriptive_data.shape)
     descriptive_data['nr_missings'] = np.nan
     descriptive_data['seq_length'] = np.nan
     print(descriptive_data.head(20))
@@ -21,6 +22,7 @@ def read_dialect_glucose(name_dataset=None, type_states=None):
 
     # read and process glucose data
     pt_numbers = list(descriptive_data['Pt nr'].values)
+    print(len(pt_numbers))
     for num in pt_numbers:
         location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/Patients/' + str(num) + '/' + str(num) + '-glucose' + '.txt'
         
@@ -55,6 +57,8 @@ def read_dialect_glucose(name_dataset=None, type_states=None):
 
     summary = data.describe(include='all')
     print(data.groupby('seq_length')['Pt nr'].nunique())
+    print(data.groupby('nr_missings')['Pt nr'].nunique())
+    print(data['nr_missings'].nunique())
 
     # for the refinements later on it is useful to have the indices sorted
     data.reset_index(drop=True, inplace=True)
