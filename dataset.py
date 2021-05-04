@@ -58,7 +58,7 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
 
             if pair[0] in bin_atts:
             
-                sel_idx = df[df[pair[0]] == pair[1]].index.values
+                sel_idx = df[df[pair[0]] == pair[1][0]].index.values
                 idx = np.intersect1d(idx, sel_idx)
         
             elif pair[0] in num_atts:

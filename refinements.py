@@ -202,8 +202,8 @@ def refine_binary_attributes(seed=None, df=None, subgroup=None, binary_attribute
         for attribute in binary_attributes:
             
             values = df[attribute].unique()
-            refined_cq.append({'description' : {attribute : values[0]}})
-            refined_cq.append({'description' : {attribute : values[1]}})
+            refined_cq.append({'description' : {attribute : [values[0]]}})
+            refined_cq.append({'description' : {attribute : [values[1]]}})
 
     # refinements for a seed
     else:
@@ -218,7 +218,7 @@ def refine_binary_attributes(seed=None, df=None, subgroup=None, binary_attribute
 
                     value = values[i]
                     temp_desc = description.copy()
-                    temp_desc[attribute] = value
+                    temp_desc[attribute] = [value]
                     refined_cq.append({'description' : temp_desc})
 
     return  refined_cq     
