@@ -11,7 +11,7 @@ import read_dialect_glucose as rdg
 
 # dialect
 #data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=1) # experiment 2
-data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=2) # experiment 1
+#data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/TIRpatientendata', type_states=2) # experiment 1
 
 # other datasets
 # callcenter example
@@ -31,7 +31,7 @@ data, attributes, combinations = rdg.read_dialect_glucose(name_dataset='C:/Users
 #data, attributes, combinations = rdna.read_dna(name_dataset='dna')
 
 # wikispeedia
-#data, attributes, combinations = rw.read_wikispeedia(name_dataset='wikispeedia')
+data, attributes, combinations = rw.read_wikispeedia(name_dataset='wikispeedia')
 
 print('attributes', attributes)
 print('data', data.head(10))

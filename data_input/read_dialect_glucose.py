@@ -97,6 +97,7 @@ def read_dialect_descriptives(name_dataset=None):
     drop_columns = [columns[2:5], columns[7:9], columns[10:12], columns[21:26], columns[28:29], columns[31:36], columns[38:50], columns[54:58]]
     # less covs
     #drop_columns = [columns[2:5], columns[7:18], columns[21:26], columns[28:29], columns[31:36], columns[38:50], columns[54:58]]
+    #drop_columns = [columns[2:5], columns[7:58]]
     
     drop_columns_flat = [item for sublist in drop_columns for item in sublist]
     data = data.drop(drop_columns_flat, axis=1)
