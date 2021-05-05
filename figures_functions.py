@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 
 import qualities_orders as qmo
+import dataset as dt
 
 def load(name_dataset=None):
 
@@ -17,6 +18,7 @@ def load(name_dataset=None):
 
     return result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd
 
+'''
 def recalculate_parameters(quality_measure=None, best_order=None,
                            df=None, cols=None, attributes=None, 
                            quals=None, general_params=None):
@@ -30,6 +32,28 @@ def recalculate_parameters(quality_measure=None, best_order=None,
                                                         general_params=general_params, ref='dataset')
 
     return subgroup_params, idx
+'''
+def recalculate_parameters(quality_measure=None, best_order=None,
+                           df=None, cols=None, attributes=None, 
+                           quals=None, general_params=None,
+                           desc_series=None,
+                           bin_atts=None, num_atts=None, nom_atts=None, dt_atts=None):
+
+    #lswithstrings = quals.loc['idx_sg'].strip()[1:-1].split(',')
+    #idx = list(map(int, lswithstrings[0:-1]))
+    #subgroup = df.loc[idx]
+
+    #desc_series = sg.iloc[0, ].dropna().drop(['sg'])
+    desc_dict = desc_series.apply(eval).to_dict()
+    subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=desc_dict, df=df, 
+                                                                     bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
+                                                                     dt_atts=dt_atts)
+
+    subgroup_params = qmo.calculate_subgroup_parameters(df=df, subgroup=subgroup, subgroup_compl=None, idx_sg=idx_sg,
+                                                        attributes=attributes, quality_measure=quality_measure, start_at_order=best_order,
+                                                        general_params=general_params, ref='dataset')
+
+    return subgroup_params, idx_sg
               
 def visualize_probs(tA=None, tpi=None, states=None, order=None, y_names=None, title=None, name_fig=None):
 
@@ -86,4 +110,33 @@ def visualize_probs(tA=None, tpi=None, states=None, order=None, y_names=None, ti
 
         fig.savefig(name_fig, bbox_inches='tight')
       
+    return fig
+
+def repeat_lower_order_figure(tA_data=None, tA_subgroup=None, states=None, title=None, name_fig=None):
+
+    fig = plt.figure(figsize=(27, 16))
+
+    tA_data[tA_data == 0.0000000000001] = 0
+
+    repeat = len(tA_subgroup) / len(states)
+    tA_data_long = pd.concat([tA_data]*25).reset_index(drop=True)
+    dif = tA_subgroup.reset_index(drop=True) - tA_data_long
+
+    print(dif.shape)
+
+    x_names = states
+
+    gs = grd.GridSpec(1, 1, wspace=0.1)
+
+    ax1 = plt.subplot(gs[0])
+    p1 = ax1.imshow(dif, aspect=0.5, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+    ax1.set_xticklabels(x_names)
+    ax1.set_yticks(np.arange(len(tA_data_long)))
+    #ax2.set_yticklabels(y_names)
+    plt.title(title)
+
+
+
+    fig.savefig(name_fig, bbox_inches='tight')
+
     return fig
