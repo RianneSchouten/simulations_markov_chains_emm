@@ -52,7 +52,7 @@ def select_idx(pairs=None, df=None, bin_atts=None, num_atts=None, nom_atts=None,
         idx = []
     else: 
         # set all indices as a starting point
-        idx = df.index.values
+        idx = df.index.values        
 
         for pair in pairs:
 

@@ -43,8 +43,8 @@ def prepare_beam_and_candidate_result_set(candidate_result_set=None, cq_satisfie
     # we have the same procedure for the result set
     # but we only do it at the end of the entire beam search
     # in every level of the beam search we only select the first q of the beam
-    selected_for_result_list = candidate_queue[0:beam_search_params['q']]
+    selected_for_result_list = candidate_queue[0:beam_search_params['q']] # q has to be smaller than w
     candidate_result_set.append(selected_for_result_list) # creates a nested list
     rs_candidates = [item for sublist in candidate_result_set for item in sublist] # unlist alle elements
     
-    return [rs_candidates], candidates, n_redun_descs
+    return [rs_candidates], candidate_queue, n_redun_descs

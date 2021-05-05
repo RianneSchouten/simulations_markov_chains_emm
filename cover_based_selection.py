@@ -23,16 +23,18 @@ def select_using_weighted_coverage(candidates=None, stop_number=None, qm=None, d
     
         while i < stop_number:
        
-            # update qv of every candidate
             candidates_with_updated_qms = []
+            # update weights of cases covered by already selected descriptions (sel_idx)
+            all_idx.loc[sel_idx,['count']] = all_idx.loc[sel_idx,['count']] + 1
+
             for candidate in left_over_candidates:
 
-                all_idx.loc[sel_idx,['count']] = all_idx.loc[sel_idx,['count']] + 1
-                # select rows in current candidate
+                # select rows in current candidate and calculate weight for candidate
                 sg_idx = candidate['qualities']['idx_sg']
                 all_weights = np.power(wcs_params['gamma'], all_idx.loc[sg_idx, ['count']].values)
                 weight = np.sum(all_weights) / len(sg_idx)
 
+                # calculate new quality for candidate
                 candidate['qualities'][temp_qm] = candidate['qualities'][qm] * weight
                 candidates_with_updated_qms.append(candidate)
 

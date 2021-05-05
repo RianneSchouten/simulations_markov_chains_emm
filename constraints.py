@@ -1,5 +1,8 @@
 import numpy as np
 
+# because the descriptions are saved in a dictionary
+# it is possible to compare them without reordering them
+# the binary, nominal (tuple), and numerical (tuple) can be handled
 def redundant_description(desc=None, cq_satisfied=None):
 
     redundancy_check = True
