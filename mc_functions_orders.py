@@ -9,7 +9,7 @@ def calculate_quality_values(general_params=None, subgroup_params=None, quality_
                                                       quality_measure=quality_measure, ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order)
     #print(qm)
     
-    quality_values[quality_measure] = np.round(qm, 2)
+    quality_values[quality_measure] = np.round(qm, 0) # change to 0, that makes more sense when comparing descriptions in desc-based selection of beam
     quality_values['best_order'] = sg_order
     quality_values['llsg'] = np.round(llsg, 2)
     quality_values['score'] = score

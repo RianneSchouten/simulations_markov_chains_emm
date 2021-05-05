@@ -4,21 +4,24 @@ import pandas as pd
 import dataset as dt
 import refinements as rf
 import constraints as cs
-import summaries_orders as suo
+#import summaries_orders as suo
 import qualities_orders as qmo
+import prepare_beam as pb
+import prepare_result as pr
+import dominance_pruning as dp
 
 def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=None, quality_measure=None, 
                 w=None, d=None, q=None, Z=None, ref=None, start_at_order=None,
                 constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-                stop_at_order=None, save_location=None):
+                stop_at_order=None, wcs_params=None, save_location=None):
 
     df, cols, bin_atts, nom_atts, num_atts, dt_atts, idx = dt.read_data(dataset=dataset, attributes=attributes)
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
-    #print(bin_atts)
-    #print(nom_atts)
-    #print(num_atts)
+    print(bin_atts)
+    print(nom_atts)
+    print(num_atts)
     #print(dt_atts)
     #print(df.describe(include='all'))
 
@@ -26,7 +29,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, stop_at_order=stop_at_order, 
                                                       quality_measure=quality_measure)
-    #print(general_params)
+    print(general_params)
 
     candidate_queue, nominal_values  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -34,22 +37,24 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                                                                        nr_quantiles=nr_quantiles)
     #print('candidate queue:', candidate_queue)
     
-    result_set = []
+    candidate_result_set = []
     considered_subgroups = {}
     #nconsd = 0
     for d_i in range(1, d+1):
         
         n_consd = 0
-        n_redundant_descs = 0
+        n_sim_descs = 0
         n_small_groups = 0
-        n_redundant_coverage = 0
+        #n_redundant_coverage = 0
         
-        #print('level:', d_i)
+        print('level:', d_i)
 
         cq_satisfied = []
+        i = 0
         for seed in candidate_queue:
 
-            #print('seed:', seed)
+            i += 1
+            print(i, ' of ', len(candidate_queue), ' candidates')
 
             subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=seed['description'], df=df, 
                                                                              bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
@@ -61,9 +66,11 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                 seed_set = rf.refine_seed(seed=seed, subgroup=subgroup, bin_atts=bin_atts, nom_atts=nom_atts,
                                           num_atts=num_atts, dt_atts=dt_atts, nr_quantiles=nr_quantiles, nominal_values=nominal_values)
 
+            j = 0
             for desc in seed_set:
 
-                #print(desc['description'])
+                j += 1
+                print(j, ' of ', len(seed_set), ' descs')
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:
@@ -74,7 +81,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                 redundancy_check_description = cs.redundant_description(desc=desc, cq_satisfied=cq_satisfied)    
 
                 if not redundancy_check_description:
-                    n_redundant_descs += 1
+                    n_sim_descs += 1
                 else:
                     subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=desc['description'], df=df,
                                                                                      bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
@@ -85,48 +92,62 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
                     if not constraint_check_size:
                         n_small_groups += 1
                     else:
-                        if d_i == 1:
-                            idx_sg_old = idx
-                        else:
-                            idx_sg_old = seed['qualities']['idx_sg']
-                        redundancy_check_coverage = cs.redundant_subgroup_coverage(level=d_i, idx_sg_old=idx_sg_old, idx_sg_new=idx_sg, constraint_subgroup_coverage=constraint_subgroup_coverage)
+                        #if d_i == 1:
+                        #    idx_sg_old = idx
+                        #else:
+                        #    idx_sg_old = seed['qualities']['idx_sg']
+                        
+                        #redundancy_check_coverage = cs.redundant_subgroup_coverage(level=d_i, idx_sg_old=idx_sg_old, idx_sg_new=idx_sg, constraint_subgroup_coverage=constraint_subgroup_coverage)
 
-                        if not redundancy_check_coverage:
-                            n_redundant_coverage += 1
-                        else:                        
+                        #if not redundancy_check_coverage:
+                        #    n_redundant_coverage += 1
+                        #else:                        
                             # calculate quality measure
-                            subgroup_params = qmo.calculate_subgroup_parameters(df=df, subgroup=subgroup, subgroup_compl=subgroup_compl, idx_sg=idx_sg,
+                        
+                        subgroup_params = qmo.calculate_subgroup_parameters(df=df, subgroup=subgroup, subgroup_compl=subgroup_compl, idx_sg=idx_sg,
                                                                                 attributes=attributes, quality_measure=quality_measure, start_at_order=start_at_order,
                                                                                 general_params=general_params, ref=ref)
-                            #print(subgroup_params)
+                        #print(subgroup_params)
 
-                            # do heuristic search process for initial probs and for higher order
-                            desc_qm = qmo.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
+                        # do heuristic search process for initial probs and for higher order
+                        desc_qm = qmo.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
                                                  subgroup_params=subgroup_params, quality_measure=quality_measure, 
                                                  ref=ref, start_at_order=subgroup_params['new_order'], stop_at_order=stop_at_order,
                                                  print_this=False)
 
-                            cq_satisfied.append(desc_qm)
-                            #print(desc_qm['description'])
-                            #print(desc_qm['qualities'][quality_measure])                 
+                        cq_satisfied.append(desc_qm)
+                        #print(desc_qm['description'])
+                        #print(desc_qm['qualities'][quality_measure])                 
 
-        considered_subgroups['level_' + str(d_i)] = {'n_consd': n_consd, 'n_redundant_descs': n_redundant_descs, 
-                                                     'n_small_groups': n_small_groups, 'n_redundant_coverage': n_redundant_coverage}
+        considered_subgroups['level_' + str(d_i)] = {'n_consd': n_consd, 'n_sim_descs': n_sim_descs, 
+                                                     'n_small_groups': n_small_groups}
 
-        result_set, candidate_queue = suo.prepare_resultlist_cq(result_set=result_set, cq_satisfied=cq_satisfied, 
-                                                               quality_measure=quality_measure, q=q, w=w)
-        #print(len(candidate_queue))
+        # below we prepare the result set and beam (candidate_queue) for the next level
+        # there, we apply description based selection and cover based selection to prevent issues with redundancy
+        #beam_search_params.update({'d_i': d_i})
+        candidate_result_set, candidate_queue, n_redun_descs = pb.collect_beam_and_candidate_result_set(candidate_result_set=candidate_result_set, cq_satisfied=cq_satisfied, 
+                                                                                                        qm=quality_measure, beam_search_params={'w': w, 'q': q, 'd_i': d_i}, 
+                                                                                                        data_size=len(df), wcs_params=wcs_params)
+        considered_subgroups['level_' + str(d_i)]['n_redun_decs'] = n_redun_descs
+
+    result_set, rs_n_redun_descs = pr.select_result_set(candidate_result_set=candidate_result_set[0], qm=quality_measure, beam_search_params={'w': w, 'q': q, 'd_i': d_i}, 
+                                                        data_size=len(df), wcs_params=wcs_params)
+
+    # apply dominance pruning
+    result_set_pruned, n_consd, n_small_groups = dp.apply_dominance_pruning(result_set=result_set, dataset=df, 
+                                                                            bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
+                                                                            dt_atts=dt_atts, start_at_order=start_at_order, stop_at_order=stop_at_order, ref=ref,
+                                                                            constraint_subgroup_size=constraint_subgroup_size, attributes=attributes, 
+                                                                            general_params=general_params, qm=quality_measure, beam_search_params={'w': w, 'q': q, 'd_i': d_i})
+    # again apply description and cover based selection
+    final_result_set, rs_n_redun_descs = pr.select_result_set(candidate_result_set=result_set_pruned, qm=quality_measure, beam_search_params={'w': w, 'q': q, 'd_i': d_i}, 
+                                                              data_size=len(df), wcs_params=wcs_params)
+    considered_subgroups['dominance_pruning'] = {'n_consd': n_consd, 'n_sim_descs': None, 
+                                                 'n_small_groups': n_small_groups, 
+                                                 'n_redun_decs': rs_n_redun_descs}
     
-    # result set is a dictionary
-    # result emm is a dataframe with the descriptive attributes on the columns, and q*2 rows
-    result_emm = suo.resultlist_emm(result_set=result_set, distribution=distribution, general_params=general_params,
-                                    quality_measure=quality_measure, Z=Z)
-    #print(result_emm)
-    
-    if save_location is not None:
-        result_emm.to_excel(save_location)
-    
-    # nconsd_list contains the number of candidate descriptions that are considered at least level
-    #print(nconsd_list)
+    # result_set is a dictionary
+    # result_emm is a dataframe with the descriptive attributes on the columns, and q*2 rows
+    result_emm = pr.prepare_result_list(result_set=result_set)
 
     return result_emm, considered_subgroups, general_params

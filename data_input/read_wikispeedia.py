@@ -22,14 +22,17 @@ def read_wikispeedia(name_dataset=None):
     print(data)
     print(data.dtypes)
 
-    skip_attributes = ['path', 'timestamp', 'seq_length', 'nr_distinct_states']
+    skip_attributes = ['path', 'timestamp']#, 'seq_length', 'nr_distinct_states']
     print(data.shape)
     #data = data[(data['finished'] == 1)]
     print(data.shape)
     print(data.groupby('seq_length')[id_attribute].nunique())
 
     # to ensure selection of subgroup
-    data.sort_values(['id', 'counter'], ascending=[True, True]).reset_index(drop=True, inplace=True)
+    # the inplace does not work in a pipe like this
+    #data.sort_values(['id', 'counter'], ascending=[True, True]).reset_index(drop=True, inplace=True)
+    data.sort_values(['id', 'counter'], ascending=[True, True], inplace=True)
+    data.reset_index(drop=True, inplace=True)
     summary = data.describe(include='all')
           
     outcome_attribute = None      
@@ -175,10 +178,13 @@ def join_categories(data=None, categories=None):
     print(full_data.groupby('category')['id'].nunique())
 
     # change state-values
+    '''
     full_data['category'] = np.where(full_data['category'] == 'People', 'People', 
-                        np.where(full_data['category'] == 'Geography', 'Geography',
-                        np.where(full_data['category'] == 'Science', 'Science', 'Other')))
+                            np.where(full_data['category'] == 'Geography', 'Geography',
+                            np.where(full_data['category'] == 'History', 'History',
+                            np.where(full_data['category'] == 'Science', 'Science', 'Other'))))
     print(full_data.groupby('category')['id'].nunique())
+    '''
     
     # add features about categories
     nr_categories = full_data.groupby(['id']).nunique()['category']

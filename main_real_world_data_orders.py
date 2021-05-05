@@ -7,7 +7,8 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
          nr_quantiles=None, quality_measure=None, 
          w=None, d=None, q=None, m=None, Z=None, seed=None, 
          constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-         ref=None, start_at_order=None, stop_at_order=None, save_location=None):
+         ref=None, start_at_order=None, stop_at_order=None, 
+         wcs_params=None, save_location=None):
          
     data, attributes, combinations = rwdto.load(name_dataset=name_dataset)  
 
@@ -25,7 +26,7 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
                                                                                          nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, m=m, Z=Z,
                                                                                          constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
                                                                                          ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order, 
-                                                                                         save_location=save_location_total)
+                                                                                         wcs_params=wcs_params, save_location=save_location_total)
 
     # save
     rw_analysis_info = pd.DataFrame({'m': [m], 'nr_quantiles': [nr_quantiles], 'w': [w], 'd': [d], 'q': [q], 'Z': [Z], 'use_distribution': [use_distribution]})
@@ -41,15 +42,43 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
 
 if __name__ == '__main__':
 
-    main(name_dataset='TIRpatientendata_2', 
+     main(name_dataset='wikispeedia', 
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210426,
+         w=25, d=3, q=20, m=None, Z=None, seed=20210505,
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=1, save_location='./data_output/')
+         stop_at_order=1,
+         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
+         save_location='./data_output/')
 
-    '''
+'''
+     main(name_dataset='movies', 
+         calculate_distribution=False, use_distribution=False,
+         nr_quantiles=4, quality_measure='phiaic', # just one !!
+         w=25, d=3, q=20, m=None, Z=None, seed=20210504,
+         ref='dataset', start_at_order=4,
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         stop_at_order=1,
+         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
+         save_location='./data_output/')
+'''
+'''
+     # change to w = 25 (1/4 of 94)
+     # change to q = 20
+     # q has to be smaller than w
+
+     main(name_dataset='TIRpatientendata_2', 
+         calculate_distribution=False, use_distribution=False,
+         nr_quantiles=4, quality_measure='phiaic', # just one !!
+         w=25, d=3, q=20, m=None, Z=None, seed=20210504,
+         ref='dataset', start_at_order=4,
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         stop_at_order=1,
+         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
+         save_location='./data_output/')
+'''    
+'''
     # BEFORE REVISION, OUTPUT VERSION 1 MANUSCRIPT
     main(name_dataset='TIRpatientendata_2', 
          calculate_distribution=False, use_distribution=False,
@@ -58,8 +87,9 @@ if __name__ == '__main__':
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1, save_location='./data_output/')
-    '''
-    '''
+'''
+
+'''
     main(name_dataset='TIRpatientendata_1', 
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
@@ -67,4 +97,4 @@ if __name__ == '__main__':
          ref='dataset', start_at_order=2,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1, save_location='./data_output/')
-    '''
+'''

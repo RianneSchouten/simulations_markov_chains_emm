@@ -9,7 +9,7 @@ import distribution_false_discoveries_orders as dfdo
 def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribution=None, attributes=None, 
                         nr_quantiles=None, quality_measure=None, w=None, d=None, q=None, m=None, Z=None, 
                         constraint_subgroup_coverage=None, constraint_subgroup_size=None,
-                        ref=None, start_at_order=None, stop_at_order=None, save_location=None):   
+                        ref=None, start_at_order=None, stop_at_order=None, wcs_params=None, save_location=None):   
     
     if use_distribution:
   
@@ -51,17 +51,19 @@ def analysis_rw_dataset(dataset=None, calculate_distribution=None, use_distribut
 
     else:
 
-        # do not use the distribution    
+        # do not use the distribution
         result_rw_analysis, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes,
                                                                                nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, Z=None, 
                                                                                ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order,
-                                                                               constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size)
+                                                                               constraint_subgroup_coverage=constraint_subgroup_coverage, constraint_subgroup_size=constraint_subgroup_size,
+                                                                               wcs_params=wcs_params)
         print(considered_subgroups)
 
     return result_rw_analysis, considered_subgroups, general_params
 
 def load(name_dataset=None):
 
+    print('load data')
     #location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
     #sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
 

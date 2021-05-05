@@ -4,7 +4,6 @@ import pandas as pd
 def remove_redundant_descriptions(descs=None, stop_number=None, qm=None, beam_search_params=None):
 
     all_descs = descs.copy()
-    print(len(descs))
 
     if beam_search_params['d_i'] > 1:
 
@@ -43,8 +42,6 @@ def remove_redundant_descriptions(descs=None, stop_number=None, qm=None, beam_se
 
         n_redun_descs = None
         candidates = all_descs
-
-    print(len(candidates))
 
     return candidates, n_redun_descs
 
