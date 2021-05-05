@@ -70,7 +70,10 @@ def rank_result_emm(result_emm=None, quality_measure=None):
     descriptions = result_emm.loc['description', covs]
     qualities = result_emm.loc['qualities', :]
 
-    selection = list(map(lambda x: all(descriptions.iloc[x, :2].values == list(np.ones(2))) & 
+    #selection = list(map(lambda x: all(descriptions.iloc[x, :2].values == list(np.ones(2))) & 
+    #                                all(pd.isnull(descriptions.iloc[x, 2:])), np.arange(len(descriptions))))
+
+    selection = list(map(lambda x: all([val == [1] for val in descriptions.iloc[x,:2].values]) & 
                                     all(pd.isnull(descriptions.iloc[x, 2:])), np.arange(len(descriptions))))
 
     # for every description, True or False is given
