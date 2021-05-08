@@ -9,13 +9,14 @@ def main(subgroup_orders=None,
          save_location=None, stop_at_order=None,
          constraint_subgroup_size=None, constraint_subgroup_coverage=None,
          nreps=None, seed=None, ncovs=None,
-         N=None, T=None, S=None):
+         N=None, T=None, S=None, wcs_params=None):
 
     result_experiment = exo.experiment(nreps=nreps, seed=seed, ncovs=ncovs, N=N, T=T, S=S, 
                                        subgroup_orders=subgroup_orders, refs=refs,
                                        nr_quantiles=nr_quantiles, quality_measures=quality_measures, 
                                        w=w, d=d, q=q, start_at_order=start_at_order, stop_at_order=stop_at_order,
-                                       constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9, save_location=save_location)
+                                       constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9, 
+                                       wcs_params=wcs_params, save_location=save_location)
 
     
     if save_location is not None:
@@ -56,6 +57,17 @@ if __name__ == '__main__':
     
 if __name__ == '__main__':
 
+    main(nr_quantiles=8, subgroup_orders = [2],
+         quality_measures=['phiaic'],
+         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
+         start_at_order=4, save_location='./data_output/results_revised_manuscript/experiment_higherorders',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=None,
+         nreps=40, seed=20210505, ncovs=[20],
+         N=[100], T=[10], S=[2],
+         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50})
+
+    '''
+    #  EXPERIMENT RUN BEFORE REVISION
     # main analysis
     main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
          quality_measures=['omegatv', 'phiwrl'],
@@ -64,7 +76,7 @@ if __name__ == '__main__':
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          nreps=30, seed=20210128, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
-
+    '''
     '''
     # simulation with subgroups of order = 0 (i.e. order = I)
     main(nr_quantiles=8, subgroup_orders = [0],

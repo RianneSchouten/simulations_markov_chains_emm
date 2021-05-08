@@ -3,6 +3,7 @@ import pandas as pd
 
 def select_using_weighted_coverage(candidates=None, stop_number=None, qm=None, data_size=None, wcs_params=None):
 
+    #print('len candidates', len(candidates))
     # if the number of candidates is smaller than the desired number, we can just select all candidates
     if len(candidates) > stop_number:
 
@@ -18,6 +19,8 @@ def select_using_weighted_coverage(candidates=None, stop_number=None, qm=None, d
         sel = [candidates[0]]
         left_over_candidates = candidates.copy()
         left_over_candidates.remove(left_over_candidates[0])
+
+        #print('desc', sel[0]['description'])
 
         i = 1
     
@@ -45,10 +48,15 @@ def select_using_weighted_coverage(candidates=None, stop_number=None, qm=None, d
             sel_idx = candidates_sorted[0]['qualities']['idx_sg']
             sel.append(candidates_sorted[0])
             left_over_candidates.remove(candidates_sorted[0])
+
+            #print('desc', sel[i]['description'])
+
             i += 1
 
     else:
 
         sel = candidates
+
+    #print('len sel', len(sel))
 
     return sel

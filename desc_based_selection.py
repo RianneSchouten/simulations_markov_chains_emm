@@ -5,6 +5,8 @@ def remove_redundant_descriptions(descs=None, stop_number=None, qm=None, beam_se
 
     all_descs = descs.copy()
 
+    #print('len all descs', len(all_descs))
+
     if beam_search_params['d_i'] > 1:
 
         # even if the length of descs is small, we still want to remove redundant descriptions
@@ -24,6 +26,7 @@ def remove_redundant_descriptions(descs=None, stop_number=None, qm=None, beam_se
                 if new_desc['qualities'][qm] == old_desc['qualities'][qm]:
                     #print('old_desc', old_desc['description'])
                     remove = compare_two_descs(old_desc=old_desc['description'], new_desc=new_desc['description'])
+                    #print('remove', remove)
                     if remove == 'old_desc':
                         #print('remove old desc')
                         candidates.remove(eval(remove))

@@ -36,9 +36,8 @@ def prepare_beam_and_candidate_result_set(candidate_result_set=None, cq_satisfie
 
     # apply cover-based selection
     print('cover-based selection')
-    if len(candidates) > 0:
-        candidate_queue = cbs.select_using_weighted_coverage(candidates=candidates, stop_number=beam_search_params['w'], 
-                                                             qm=qm, data_size=data_size, wcs_params=wcs_params)
+    candidate_queue = cbs.select_using_weighted_coverage(candidates=candidates, stop_number=beam_search_params['w'], 
+                                                         qm=qm, data_size=data_size, wcs_params=wcs_params)
                                              
     # we have the same procedure for the result set
     # but we only do it at the end of the entire beam search

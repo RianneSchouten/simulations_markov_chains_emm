@@ -12,7 +12,7 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
                nr_quantiles=None, start_at_order=None,
                quality_measures=None, w=None, d=None, q=None,
                constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-               stop_at_order=None,
+               stop_at_order=None, wcs_params=None,
                save_location=None):
 
     parameter_set = list(it.product(N, T, S, ncovs, subgroup_orders, refs)) 
@@ -28,7 +28,7 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
         ranks_one_parameter_run = parallelization(nreps=nreps, params=params, quality_measures=quality_measures, 
                                                   nr_quantiles=nr_quantiles, w=w, d=d, q=q, start_at_order=start_at_order,
                                                   stop_at_order=stop_at_order, constraint_subgroup_size=constraint_subgroup_size, 
-                                                  constraint_subgroup_coverage=constraint_subgroup_coverage)
+                                                  constraint_subgroup_coverage=constraint_subgroup_coverage, wcs_params=wcs_params)
 
         # concatenate all results per parameter combination
         params_pd = pd.DataFrame(np.tile(params, nreps).reshape(nreps, len(params)), columns = ['N', 'T', 'S', 'ncovs', 'subgroup_orders', 'refs'])
@@ -46,7 +46,7 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
     return result_experiment
 
 def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None, stop_at_order=None,
-                    constraint_subgroup_size=None, constraint_subgroup_coverage=None):
+                    constraint_subgroup_size=None, constraint_subgroup_coverage=None, wcs_params=None):
 
     inputs = range(nreps)
     #num_cores = multiprocessing.cpu_count() - 2
@@ -61,12 +61,13 @@ def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles
                                                                              start_at_order,
                                                                              stop_at_order,
                                                                              constraint_subgroup_size,
-                                                                             constraint_subgroup_coverage) for i in inputs)
+                                                                             constraint_subgroup_coverage,
+                                                                             wcs_params) for i in inputs)
 
     return ranks_one_parameter_run
 
 def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None, stop_at_order=None,
-                      constraint_subgroup_size=None, constraint_subgroup_coverage=None):
+                      constraint_subgroup_size=None, constraint_subgroup_coverage=None, wcs_params=None):
 
     print(i)
     
@@ -75,7 +76,8 @@ def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=N
                                           nr_quantiles=nr_quantiles, ref=params[5], 
                                           start_at_order=start_at_order, stop_at_order=stop_at_order,
                                           quality_measures=quality_measures, w=w, d=d, q=q,
-                                          constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage)
+                                          constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
+                                          wcs_params=wcs_params)
   
     return result_ranks_one_rep
 
@@ -83,7 +85,7 @@ def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
                    nr_quantiles=None, ref=None, start_at_order=None,
                    quality_measures=None, w=None, d=None, q=None,
                    constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-                   stop_at_order=None,
+                   stop_at_order=None, wcs_params=None,
                    save_location=None):
 
     dataset, states, time_attributes = sso.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, subgroup_order=subgroup_order)    
@@ -99,7 +101,8 @@ def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
         result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
                                                                            nr_quantiles=nr_quantiles, save_location=None, ref=ref, start_at_order=start_at_order,
                                                                            stop_at_order=stop_at_order, quality_measure=quality_measure, w=w, d=d, q=q, Z=None,
-                                                                           constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage)
+                                                                           constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
+                                                                           wcs_params=wcs_params)
         # here, as part of the experiment, the rank of the true subgroup is evaluated
         result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
         result_ranks_one_rep.update(result_rank)

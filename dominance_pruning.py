@@ -22,7 +22,12 @@ def apply_dominance_pruning(result_set=None, dataset=None,
                                                                         constraint_subgroup_size=constraint_subgroup_size, attributes=attributes, 
                                                                         general_params=general_params, qm=qm, beam_search_params=beam_search_params)
 
-    return pruned_subgroups, len(pruned_descriptions), n_small_groups
+    # append with result_set, to keep the original subgroups as well
+    all_subgroups = [result_set.copy()]
+    all_subgroups.append(pruned_subgroups)
+    all_subgroups = [item for sublist in all_subgroups for item in sublist]
+
+    return all_subgroups, len(pruned_descriptions), n_small_groups
 
 def get_new_descritions(result_set=None):
 

@@ -19,9 +19,9 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     #print(df.head(5))
     #print(df.shape)
     #print(cols)
-    print(bin_atts)
-    print(nom_atts)
-    print(num_atts)
+    #print(bin_atts)
+    #print(nom_atts)
+    #print(num_atts)
     #print(dt_atts)
     #print(df.describe(include='all'))
 
@@ -29,7 +29,7 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
     general_params = qmo.calculate_general_parameters(df=df, distribution=distribution, cols=cols, attributes=attributes, order=1, 
                                                       start_at_order=start_at_order, stop_at_order=stop_at_order, 
                                                       quality_measure=quality_measure)
-    print(general_params)
+    #print(general_params)
 
     candidate_queue, nominal_values  = rf.create_starting_descriptions(df=df, cols=cols, 
                                                                        bin_atts=bin_atts, nom_atts=nom_atts, 
@@ -53,8 +53,8 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
         i = 0
         for seed in candidate_queue:
 
-            i += 1
-            print(i, ' of ', len(candidate_queue), ' candidates')
+            #i += 1
+            #print(i, ' of ', len(candidate_queue), ' candidates')
 
             subgroup, idx_sg, subgroup_compl, idx_compl = dt.select_subgroup(description=seed['description'], df=df, 
                                                                              bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts,
@@ -69,8 +69,8 @@ def beam_search(dataset=None, distribution=None, attributes=None, nr_quantiles=N
             j = 0
             for desc in seed_set:
 
-                j += 1
-                print(j, ' of ', len(seed_set), ' descs')
+                #j += 1
+                #print(j, ' of ', len(seed_set), ' descs')
 
                 print_this = False
                 #if desc['description'] == {'x0': 1, 'x1': 1}:

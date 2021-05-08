@@ -43,11 +43,6 @@ def calculate_general_parameters(df=None, distribution=None, cols=None, attribut
     data_size = {'nr_sequences': nr_sequences, 'nr_transitions': nr_transitions, 'seq_plus_transitions': nr_sequences + nr_transitions}
 
     idx = df.index.values
-    print(len(df))
-    print(len(idx))
-    print(idx[0:10])
-    print(idx[-1])
-
     params = mo.params_markov_chain_general(df=df, attributes=attributes, order=order, start_at_order=start_at_order, 
                                             stop_at_order=stop_at_order, data_size=data_size, quality_measure=quality_measure)
 

@@ -253,3 +253,14 @@ orders
 
 name <- paste('../figures/Figures_revised_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 20, units = "cm")
+
+##
+
+temp <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210505_40nreps_[100]_[10]_[2]_[20].xlsx")
+head(temp)
+
+temp %>% group_by(N, T, S, ncovs, subgroup_orders) %>%
+  summarize(r = median(phiaic_rank)) %>%
+  summarize(or = sum(phiaic_order, na.rm=TRUE))
+
+
