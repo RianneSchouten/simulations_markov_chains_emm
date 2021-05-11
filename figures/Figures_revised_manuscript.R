@@ -197,6 +197,8 @@ plot_data <- long_data %>%
 
 ranks <- plot_data %>%
   filter(type == 'rank') %>%
+  filter(measure == 'phiaic' | measure == 'phiwrl') %>%
+  mutate(measure = recode(measure, phiaic = "phiaic, phibic, phiaicc, phiwd")) %>%
   ggplot(aes(y = value, x = N)) +
   geom_boxplot(aes(fill = ncovs), outlier.shape = NA) +
   facet_grid(measure ~ timepoints, labeller = label_both) + 
@@ -220,12 +222,14 @@ ranks <- plot_data %>%
 ranks
 
 name <- paste('../figures/Figures_revised_manuscript/ranks_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
-ggsave(name, width = 20, height = 30, units = "cm")
+ggsave(name, width = 20, height = 16, units = "cm")
 
 orders <- plot_data %>% 
   filter(type == 'order') %>%
   filter(measure != 'phiwrl') %>%
   filter(measure != 'omegatv') %>%
+  filter(measure == 'phiaic' | measure == 'phiwd') %>%
+  mutate(measure = recode(measure, phiaic = "phiaic, phibic, phiaicc")) %>%
   group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
   summarize(perc_true_order = 
               100 * sum(subgroup_orders == 
@@ -246,17 +250,19 @@ orders <- plot_data %>%
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
         panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()) + 
+        panel.grid.minor.y = element_blank()) +
+  scale_y_continuous(labels=seq(0, 100, 25), breaks=seq(0,100,25)) + 
+  expand_limits(y = c(0, 100)) + 
   scale_fill_manual(values=c("#e5f5e0", "#a1d99b", "#31a354"))
 
 orders
 
 name <- paste('../figures/Figures_revised_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
-ggsave(name, width = 20, height = 20, units = "cm")
+ggsave(name, width = 20, height = 16, units = "cm")
 
 ##
 
-temp <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210505_40nreps_[100]_[10]_[2]_[20].xlsx")
+temp <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210509_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 head(temp)
 
 temp %>% group_by(N, T, S, ncovs, subgroup_orders) %>%

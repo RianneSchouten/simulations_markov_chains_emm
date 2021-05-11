@@ -25,7 +25,49 @@ def main(subgroup_orders=None,
     
     print(result_experiment) 
 
-'''
+   
+if __name__ == '__main__':
+
+    # we rewrite the code a bit to give it more overview
+    # and to add possibilities for higher order global models, a different parameters for start_at_order (s)
+    # and different subgroup size with a different true subgroup description
+        
+
+    '''
+    # run with redundancy techniques to see if that makes a difference
+    # turns out the redundancy techniques do not make a difference for the synthetic data study
+    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
+         quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
+         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
+         start_at_order=4, save_location='./data_output/results_revised_manuscript/experiment_higherorders',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=None,
+         nreps=10, seed=20210509, ncovs=[20, 10, 5],
+         N=[100], T=[200, 50, 10], S=[10, 5, 2],
+         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50})
+    '''
+    '''
+    #  EXPERIMENT RUN BEFORE REVISION
+    # main analysis
+    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
+         quality_measures=['omegatv', 'phiwrl'],
+         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
+         start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         nreps=30, seed=20210128, ncovs=[20, 10, 5],
+         N=[100], T=[200, 50, 10], S=[10, 5, 2])
+    '''
+    '''
+    # simulation with subgroups of order = 0 (i.e. order = I)
+    main(nr_quantiles=8, subgroup_orders = [0],
+         quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
+         w=25, d=3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
+         save_location='./data_output/results_manuscript/experiment_zero_order_subgroups',
+         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
+         nreps=10, seed=20210112, ncovs=[20, 10, 5],
+         N=[100, 500, 1000], T=[10, 5, 2], S=[10, 5, 2])
+    '''
+
+    '''
 ### main for first order markov chains
 def main(experiment=None,
          nr_quantiles=None, quality_measures=None, 
@@ -54,41 +96,6 @@ if __name__ == '__main__':
          nreps=25, seed=20200102, ncovs=[2, 5, 25],
          N=[100], T=[2, 5, 25], S=[2, 5, 25])
 '''
-    
-if __name__ == '__main__':
-
-    main(nr_quantiles=8, subgroup_orders = [2],
-         quality_measures=['phiaic'],
-         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
-         start_at_order=4, save_location='./data_output/results_revised_manuscript/experiment_higherorders',
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=None,
-         nreps=40, seed=20210505, ncovs=[20],
-         N=[100], T=[10], S=[2],
-         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50})
-
-    '''
-    #  EXPERIMENT RUN BEFORE REVISION
-    # main analysis
-    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
-         quality_measures=['omegatv', 'phiwrl'],
-         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
-         start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         nreps=30, seed=20210128, ncovs=[20, 10, 5],
-         N=[100], T=[200, 50, 10], S=[10, 5, 2])
-    '''
-    '''
-    # simulation with subgroups of order = 0 (i.e. order = I)
-    main(nr_quantiles=8, subgroup_orders = [0],
-         quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
-         w=25, d=3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
-         save_location='./data_output/results_manuscript/experiment_zero_order_subgroups',
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         nreps=10, seed=20210112, ncovs=[20, 10, 5],
-         N=[100, 500, 1000], T=[10, 5, 2], S=[10, 5, 2])
-    '''
-
-    
 
 
 
