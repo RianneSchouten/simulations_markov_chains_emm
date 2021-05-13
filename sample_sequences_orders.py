@@ -24,15 +24,20 @@ def define_attributes(dataset=None, time_attributes=None):
 
     return attributes
 
-def sample_dataset(N=None, T=None, S=None, ncovs=None, subgroup_order = None):
+def sample_dataset(N=None, T=None, S=None, ncovs=None, 
+                   p=None, true_desc_length=None, global_model_order=None, 
+                   subgroup_order=None):
     
-    states, dataset_probs, subgroup_probs, covs = sample_parameters(N=N, S=S, ncovs=ncovs, subgroup_order=subgroup_order)
+    states, dataset_probs, subgroup_probs = sample_parameters(N=N, S=S, ncovs=ncovs, 
+                                                              global_model_order=global_model_order,
+                                                              subgroup_order=subgroup_order)
 
     timepoint_names = ['s' + str(k) for k in np.arange(T+1)]
 
+    covs, indicator_subgroup = sample_covs(N=N, ncovs=ncovs, p=p, true_desc_length=true_desc_length)
     df = covs.copy()
     df['n'] = np.arange(N)
-    df['g'] = np.where((df.x0 == 1) & (df.x1 == 1), 1, 0)
+    df['g'] = indicator_subgroup
 
     df_sg = df[df.g == 1].copy().reset_index(drop=True) # sg
     N1 = len(df_sg)
@@ -40,7 +45,7 @@ def sample_dataset(N=None, T=None, S=None, ncovs=None, subgroup_order = None):
     N2 = len(df_d)
 
     df_sg = sample_extra_timepoints(df_sg=df_sg, probs=subgroup_probs, N=N1, order=subgroup_order, states=states, timepoint_names=timepoint_names, S=S, T=T)
-    df_d = sample_extra_timepoints(df_sg=df_d, probs=dataset_probs, N=N2, order=1, states=states, timepoint_names=timepoint_names, S=S, T=T)
+    df_d = sample_extra_timepoints(df_sg=df_d, probs=dataset_probs, N=N2, order=global_model_order, states=states, timepoint_names=timepoint_names, S=S, T=T)
     df = pd.concat([df_sg, df_d]).sort_values(by=['n'])
     
     # reshape dataset
@@ -74,6 +79,8 @@ def sample_extra_timepoints(df_sg=None, probs=None, N=None, order=None, states=N
         # first order timepoints
         
         # check if the sequences are long enough for the desired order
+        # this will not happen for our current simulation setting where T = 10 and subgroup_order = 4
+        # or when T = 2 and subgruop_order = 0 (in reality, this is 1).
         if T <= order:
             name_A = 'probs_' + str(T - 1)
             order = T - 1
@@ -101,7 +108,7 @@ def sample_extra_timepoints(df_sg=None, probs=None, N=None, order=None, states=N
 
     return sampled_timepoint_data
 
-def sample_parameters(N=None, S=None, ncovs=None, subgroup_order=None):
+def sample_parameters(N=None, S=None, ncovs=None, global_model_order=None, subgroup_order=None, p=None):
 
     letters_tuples = list(it.product(string.ascii_uppercase, string.ascii_uppercase))
     letters = []
@@ -110,20 +117,39 @@ def sample_parameters(N=None, S=None, ncovs=None, subgroup_order=None):
     states = letters[0:S] 
 
     # sample dataset parameters
-    dataset_probs = sample_order_probs(states=states, subgroup_order=1)
+    dataset_probs = sample_order_probs(states=states, order=global_model_order)
+
     # sample parameters for the subgroup
-    subgroup_probs = sample_order_probs(states=states, subgroup_order=subgroup_order)
+    subgroup_probs = sample_order_probs(states=states, order=subgroup_order)
     if subgroup_order == 0:
         subgroup_probs['probs_' + str(1)] = dataset_probs['probs_1']
-
-    # sample covariates
-    covs = pd.DataFrame()
-    for cov in np.arange(ncovs):
-        covs['x' + str(cov)] = np.random.binomial(n=1, p=0.5, size=N)
     
-    return states, dataset_probs, subgroup_probs, covs
+    return states, dataset_probs, subgroup_probs
 
-def sample_order_probs(states=None, subgroup_order=None):
+def sample_covs(N=None, ncovs=None, p=None, true_desc_length=None):
+
+    frac = 0.01
+    while frac <= 0.1:
+        
+        # sample covariates
+        covs = pd.DataFrame()
+        for cov in np.arange(ncovs):
+            covs['x' + str(cov)] = np.random.binomial(n=1, p=p, size=N)
+
+        # tell which cases should be in subgroup
+        if true_desc_length == 1:        
+            indicator_subgroup = np.where((covs.x0 == 1), 1, 0)        
+        elif true_desc_length == 2:
+            indicator_subgroup = np.where((covs.x0 == 1) & (covs.x1 == 1), 1, 0)
+        elif true_desc_length == 3:
+            indicator_subgroup = np.where((covs.x0 == 1) & (covs.x1 == 1) & (covs.x2 == 1), 1, 0)
+
+        frac = np.sum(indicator_subgroup) / N
+        #print(frac)
+
+    return covs, indicator_subgroup
+
+def sample_order_probs(states=None, order=None):
 
     probs = {}
     S = len(states)
@@ -134,8 +160,8 @@ def sample_order_probs(states=None, subgroup_order=None):
     index_states = [(st,) for st in states]
     probs['probs_' + str(0)] = pd.DataFrame(p_norm, index=index_states, columns=['pi'])
 
-    if subgroup_order > 0:
-        for o in np.arange(1, subgroup_order+1):
+    if order > 0:
+        for o in np.arange(1, order+1):
 
             # new probs for next level
             p = np.random.uniform(size=S**(o+1), low=0.0, high=1.0).reshape(S**o, S)

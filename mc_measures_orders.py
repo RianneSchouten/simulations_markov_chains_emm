@@ -21,7 +21,8 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
                                                              start_at_order=start_at_order, quality_measure=quality_measure)
     #print(found_order)
 
-    # calculate the parameters with the true order
+    # calculate the parameters with the found order
+    # this is necessary because if we start at order 4, but the dataset has order 2, then more data can be used for proper estimation of an order 2
     freqs, initial_freqs, probs, new_order = calculate_model_parameters(df=df, time_attributes=time_attributes, first_timepoint=first_timepoint, id_attribute=id_attribute,
                                                                         states=states, order=found_order, col_list=col_list, empty_dfs=empty_dfs)
 
@@ -31,7 +32,7 @@ def params_markov_chain_general(df=None, attributes=None, order=None, start_at_o
 
     return params
 
-def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_params=None, attributes=None, quality_measure=None, start_at_order=None, ref=None):
+def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_params=None, attributes=None, quality_measure=None, start_at_order=None):
 
     time_attributes = attributes['time_attributes']
     first_timepoint = attributes['first_timepoint']
@@ -58,12 +59,15 @@ def params_markov_chain_subgroup(subgroup=None, subgroup_compl=None, general_par
 
 def calculate_model_parameters(df=None, time_attributes=None, first_timepoint=None, id_attribute=None, states=None, order=None, col_list=None, empty_dfs=None):
 
-    # sometimes the desired order cannot be calculated in the dataset
+    # sometimes the desired order cannot be calculated in the dataset because the sequences are too short
     # we will then see which order is possible and proceed with that order
+
     freqs, df_additions, new_order = higher_order_count_matrix(df=df, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
                                                                id_attribute=id_attribute, order=order, col_list=col_list, empty_dfs=empty_dfs)
+    
     initial_freqs = initial_count_matrix(df=df_additions, time_attributes=time_attributes, states=states, first_timepoint=first_timepoint,
                                          id_attribute=id_attribute, order=new_order, col_list=col_list, empty_dfs=empty_dfs)
+    
     probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
 
     return freqs, initial_freqs, probs, new_order
@@ -80,7 +84,7 @@ def determine_order_entire_dataset(df=None, time_attributes=None, first_timepoin
 
     probs = calculate_model_probs(freqs=freqs, s=len(states), order=new_order)
 
-    # we check possible orders from start_at_order down to order=1 (even if the true subgroup follow a zero order model)
+    # we check possible orders from start_at_order down to order=1 (even if the true subgroup follows a zero order model)
     if quality_measure in ['deltatv', 'omegatv', 'phiwrl', 'phiwd']:        
         # use phiaic
         score, lld, found_order = fo.calculate_best_fitting_order(probs=probs, freqs=freqs, initial_freqs=initial_freqs, start_at_order=new_order, 
@@ -90,6 +94,57 @@ def determine_order_entire_dataset(df=None, time_attributes=None, first_timepoin
                                                                   stop_at_order=1, s=len(states), quality_measure=quality_measure, data_size=data_size)
 
     return score, lld, found_order
+
+def calculate_model_probs(freqs=None, s=None, order=None):
+
+    probs = {}
+
+    # and for tpi the normalized values
+    lss = freqs['freq_' + str(0)]
+    tpi = lss.divide(other = lss.sum().values[0], axis=0)
+    probs['prob_' + str(0)] = tpi
+
+    for o in np.arange(1, order+1):
+
+        lss = freqs['freq_' + str(o)]
+        ls = lss.sum(axis=1) # apply to columns will give one sum value per row
+
+        # for the calculation of probabilities, we add 1 to every cell with 0
+        # 0 / 1 will still be 0, so it will not influence the probs
+        ls[ls == 0.0] = 1.0
+        tA = lss.divide(ls, axis=0)
+        probs['prob_' + str(o)] = tA
+
+    return probs
+
+def order_and_prepare_states(states=None, time_attributes=None, start_at_order=None):
+
+    states = np.sort(states)
+    empty_dfs = {}
+    col_list = [time_attributes[1], time_attributes[2]]
+
+    for o in np.arange(1, start_at_order+1):
+
+        if o < 2:
+            
+            all_possible_indices = states
+            empty_lss = pd.DataFrame(index=states)
+            empty_dfs['empty_lss_' + str(0)] = empty_lss
+            empty_dfs['empty_lss_' + str(o)] = empty_lss
+
+        else:
+
+            all_possible_indices = list(it.product(states, repeat = o))
+
+            shift_col = time_attributes[2] + str(o + 1)
+            col_list = col_list + [shift_col]
+
+            idx = pd.MultiIndex.from_tuples(all_possible_indices, names=col_list[0:o])
+
+            empty_lss = pd.DataFrame(index=idx)
+            empty_dfs['empty_lss_' + str(o)] = empty_lss            
+
+    return states, empty_dfs, col_list
 
 def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_timepoint=None, id_attribute=None, order=None, col_list=None, empty_dfs=None):
 
@@ -103,8 +158,8 @@ def higher_order_count_matrix(df=None, time_attributes=None, states=None, first_
     min_T = int(min(maxs.iloc[:, -1]) - first_timepoint)
     if min_T + 1 < order:
         order = min_T + 1
-        #print('new order', order)
-        #print('have to change order')
+        print('new order', order)
+        print('have to change order')
     new_order = order
     #if new_order == 1:
     #    print(data[data[id_attribute].isin(maxs[maxs.counter == 0].index.values)]) # this could happen if by accident not all descriptive attributes are on the sequence level
@@ -202,55 +257,7 @@ def initial_count_matrix(df=None, time_attributes=None, states=None, first_timep
 
     return initial_freqs
 
-def calculate_model_probs(freqs=None, s=None, order=None):
 
-    probs = {}
-
-    # and for tpi the normalized values
-    lss = freqs['freq_' + str(0)]
-    tpi = lss.divide(other = lss.sum().values[0], axis=0)
-    probs['prob_' + str(0)] = tpi
-
-    for o in np.arange(1, order+1):
-
-        lss = freqs['freq_' + str(o)]
-        ls = lss.sum(axis=1) # apply to columns will give one sum value per row
-
-        # for the calculation of probabilities, we add 1 to every cell with 0
-        ls[ls == 0.0] = 1.0
-        tA = lss.divide(ls, axis=0)
-        probs['prob_' + str(o)] = tA
-
-    return probs
-
-def order_and_prepare_states(states=None, time_attributes=None, start_at_order=None):
-
-    states = np.sort(states)
-    empty_dfs = {}
-    col_list = [time_attributes[1], time_attributes[2]]
-
-    for o in np.arange(1, start_at_order+1):
-
-        if o < 2:
-            
-            all_possible_indices = states
-            empty_lss = pd.DataFrame(index=states)
-            empty_dfs['empty_lss_' + str(0)] = empty_lss
-            empty_dfs['empty_lss_' + str(o)] = empty_lss
-
-        else:
-
-            all_possible_indices = list(it.product(states, repeat = o))
-
-            shift_col = time_attributes[2] + str(o + 1)
-            col_list = col_list + [shift_col]
-
-            idx = pd.MultiIndex.from_tuples(all_possible_indices, names=col_list[0:o])
-
-            empty_lss = pd.DataFrame(index=idx)
-            empty_dfs['empty_lss_' + str(o)] = empty_lss            
-
-    return states, empty_dfs, col_list
 
 
 

@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 
-def calculate_quality_values(general_params=None, subgroup_params=None, quality_measure=None, ref=None, start_at_order=None, stop_at_order=None, print_this=None):
+def calculate_quality_values(general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None, stop_at_order=None, print_this=None):
 
     quality_values = {}
 
     qm, score, llsg, sg_order = search_quality_values(general_params=general_params, subgroup_params=subgroup_params, print_this=print_this,
-                                                      quality_measure=quality_measure, ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order)
+                                                      quality_measure=quality_measure, start_at_order=start_at_order, stop_at_order=stop_at_order)
     #print(qm)
     
     quality_values[quality_measure] = np.round(qm, 0) # change to 0, that makes more sense when comparing descriptions in desc-based selection of beam
@@ -16,7 +16,7 @@ def calculate_quality_values(general_params=None, subgroup_params=None, quality_
 
     return quality_values
 
-def search_quality_values(general_params=None, subgroup_params=None, quality_measure=None, ref=None, start_at_order=None, stop_at_order=None, print_this=None):
+def search_quality_values(general_params=None, subgroup_params=None, quality_measure=None, start_at_order=None, stop_at_order=None, print_this=None):
 
     if quality_measure in ['deltatv', 'omegatv']:
 
@@ -42,7 +42,7 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
                                                              start_at_order=start_at_order, stop_at_order=stop_at_order, s=len(general_params['states']), print_this=print_this,
                                                              quality_measure=quality_measure, data_size=subgroup_params['sg_size'])
         # calculate reference likelihood
-        refll, refscore = calculate_reference_score(ref=ref, general_params=general_params, subgroup_params=subgroup_params, 
+        refll, refscore = calculate_reference_score(general_params=general_params, subgroup_params=subgroup_params, 
                                                     quality_measure=quality_measure, print_this=print_this)
         if np.isnan(refscore):
             print(refll)
@@ -61,15 +61,15 @@ def search_quality_values(general_params=None, subgroup_params=None, quality_mea
 
         return qm, score, llsg, sg_order
 
-def calculate_reference_score(ref=None, general_params=None, subgroup_params=None, quality_measure=None, print_this=None):
+def calculate_reference_score(general_params=None, subgroup_params=None, quality_measure=None, print_this=None):
 
-    if ref == 'dataset':
-        # sg on dataset params
-        ll, ll_list = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs'], print_this=print_this,
-                                               initial_freqs=subgroup_params['initial_freqs'], ll_list=None, order=general_params['found_order'], s=len(general_params['states']))
-        score = calculate_score(ll=ll, quality_measure=quality_measure, order=general_params['found_order'], s=len(general_params['states']), 
-                                data_size=subgroup_params['sg_size'], print_this=print_this)
-        return ll, score
+    ll, ll_list = calculate_log_likelihood(probs=general_params['probs'], freqs=subgroup_params['freqs'], print_this=print_this,
+                                           initial_freqs=subgroup_params['initial_freqs'], ll_list=None, order=general_params['found_order'], s=len(general_params['states']))
+
+    score = calculate_score(ll=ll, quality_measure=quality_measure, order=general_params['found_order'], s=len(general_params['states']), 
+                            data_size=subgroup_params['sg_size'], print_this=print_this)
+                                
+    return ll, score
 
 def calculate_best_fitting_order(probs=None, freqs=None, initial_freqs=None, start_at_order=None, stop_at_order=None,
                                  s=None, quality_measure=None, data_size=None, print_this=None):
@@ -117,7 +117,13 @@ def calculate_score(ll=None, quality_measure=None, order=None, s=None, data_size
     
     size = data_size['seq_plus_transitions']
 
-    if quality_measure == 'phiwd':
+    # if N < K, this model cannot happen
+    if size < K:
+        #print('size', size)
+        #print('K', K)
+        score = np.nan
+
+    elif quality_measure == 'phiwd':
         score = 2*ll
 
     elif quality_measure == 'phibic':

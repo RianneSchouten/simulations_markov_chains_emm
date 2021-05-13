@@ -7,34 +7,35 @@ import sample_sequences_orders as sso
 import beam_search_orders as bso
 import summaries_orders as suo
 
-def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
-               N=None, T=None, S=None, refs=None,
-               nr_quantiles=None, start_at_order=None,
-               quality_measures=None, w=None, d=None, q=None,
-               constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-               stop_at_order=None, wcs_params=None,
-               save_location=None):
+def experiment(subgroup_orders=None,
+               quality_measures=None, 
+               markov_model_params=None,
+               beam_search_params=None,
+               simulation_params=None,
+               constraints=None,
+               wcs_params=None):
 
-    parameter_set = list(it.product(N, T, S, ncovs, subgroup_orders, refs)) 
+    parameter_set = list(it.product(simulation_params['N'], simulation_params['T'], simulation_params['S'], simulation_params['ncovs'], 
+                                    simulation_params['p'], simulation_params['true_desc_length'], simulation_params['global_model_order'], 
+                                    markov_model_params['start_at_order'], subgroup_orders)) 
     nexp = len(parameter_set)
 
-    np.random.seed(seed)
     for exp in np.arange(nexp):   
         print('experiment', exp+1, 'of', nexp)
 
         params = parameter_set[exp]
         print('parameters:', params)
 
-        ranks_one_parameter_run = parallelization(nreps=nreps, params=params, quality_measures=quality_measures, 
-                                                  nr_quantiles=nr_quantiles, w=w, d=d, q=q, start_at_order=start_at_order,
-                                                  stop_at_order=stop_at_order, constraint_subgroup_size=constraint_subgroup_size, 
-                                                  constraint_subgroup_coverage=constraint_subgroup_coverage, wcs_params=wcs_params)
+        ranks_one_parameter_run = parallelization(nreps=simulation_params['nreps'], params=params, quality_measures=quality_measures, 
+                                                  beam_search_params=beam_search_params, markov_model_params=markov_model_params, 
+                                                  constraints=constraints, wcs_params=wcs_params)
 
         # concatenate all results per parameter combination
-        params_pd = pd.DataFrame(np.tile(params, nreps).reshape(nreps, len(params)), columns = ['N', 'T', 'S', 'ncovs', 'subgroup_orders', 'refs'])
+        params_pd = pd.DataFrame(np.tile(params, simulation_params['nreps']).reshape(simulation_params['nreps'], len(params)), 
+                                 columns = ['N', 'T', 'S', 'ncovs', 'p', 'true_desc_length', 'global_model_order', 'start_at_order', 'subgroup_orders'])
         ranks_pd = pd.DataFrame(ranks_one_parameter_run)
         results_one_parameter_pd = pd.concat((params_pd, ranks_pd), axis=1)
-        results_one_parameter_pd.insert(len(params), 'nreps', pd.DataFrame(np.arange(1, nreps+1)))   
+        results_one_parameter_pd.insert(len(params), 'nreps', pd.DataFrame(np.arange(1, simulation_params['nreps']+1)))   
 
         # save with the parameter combination
         if exp == 0:
@@ -45,8 +46,7 @@ def experiment(nreps=None, seed=None, ncovs=None, subgroup_orders=None,
 
     return result_experiment
 
-def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None, stop_at_order=None,
-                    constraint_subgroup_size=None, constraint_subgroup_coverage=None, wcs_params=None):
+def parallelization(nreps=None, params=None, quality_measures=None, beam_search_params=None, markov_model_params=None, constraints=None, wcs_params=None):
 
     inputs = range(nreps)
     #num_cores = multiprocessing.cpu_count() - 2
@@ -56,39 +56,32 @@ def parallelization(nreps=None, params=None, quality_measures=None, nr_quantiles
     ranks_one_parameter_run = Parallel(n_jobs=-2)(delayed(one_parameter_run)(i,
                                                                              params,
                                                                              quality_measures,
-                                                                             nr_quantiles,
-                                                                             w, d, q,
-                                                                             start_at_order,
-                                                                             stop_at_order,
-                                                                             constraint_subgroup_size,
-                                                                             constraint_subgroup_coverage,
+                                                                             beam_search_params, 
+                                                                             markov_model_params, 
+                                                                             constraints,
                                                                              wcs_params) for i in inputs)
 
     return ranks_one_parameter_run
 
-def one_parameter_run(i=None, params=None, quality_measures=None, nr_quantiles=None, w=None, d=None, q=None, start_at_order=None, stop_at_order=None,
-                      constraint_subgroup_size=None, constraint_subgroup_coverage=None, wcs_params=None):
+def one_parameter_run(i=None, params=None, quality_measures=None, beam_search_params=None, markov_model_params=None, constraints=None, wcs_params=None):
 
     print(i)
     
-    result_ranks_one_rep = one_repetition(N=params[0], T=params[1], S=params[2], 
-                                          ncovs=params[3], subgroup_order=params[4],
-                                          nr_quantiles=nr_quantiles, ref=params[5], 
-                                          start_at_order=start_at_order, stop_at_order=stop_at_order,
-                                          quality_measures=quality_measures, w=w, d=d, q=q,
-                                          constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
-                                          wcs_params=wcs_params)
+    result_ranks_one_rep = one_repetition(params=params, 
+                                          beam_search_params=beam_search_params, markov_model_params=markov_model_params,      
+                                          constraints=constraints, wcs_params=wcs_params, 
+                                          quality_measures=quality_measures)
   
     return result_ranks_one_rep
 
-def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
-                   nr_quantiles=None, ref=None, start_at_order=None,
-                   quality_measures=None, w=None, d=None, q=None,
-                   constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-                   stop_at_order=None, wcs_params=None,
-                   save_location=None):
+def one_repetition(params=None, quality_measures=None, beam_search_params=None, 
+                   markov_model_params=None, constraints=None, wcs_params=None):
 
-    dataset, states, time_attributes = sso.sample_dataset(N=N, T=T, S=S, ncovs=ncovs, subgroup_order=subgroup_order)    
+    #print('params', params)
+    dataset, states, time_attributes = sso.sample_dataset(N=params[0], T=params[1], S=params[2], ncovs=params[3], 
+                                                          p=params[4], true_desc_length=params[5], global_model_order=params[6],
+                                                          subgroup_order=params[8])   
+
     attributes = sso.define_attributes(dataset=dataset, time_attributes=time_attributes)  
 
     #print(attributes)
@@ -98,13 +91,12 @@ def one_repetition(N=None, T=None, S=None, ncovs=None, subgroup_order=None,
     result_ranks_one_rep = {}
     for quality_measure in quality_measures:
         #print('quality_measure', quality_measure)
-        result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, distribution=None, attributes=attributes, 
-                                                                           nr_quantiles=nr_quantiles, save_location=None, ref=ref, start_at_order=start_at_order,
-                                                                           stop_at_order=stop_at_order, quality_measure=quality_measure, w=w, d=d, q=q, Z=None,
-                                                                           constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
-                                                                           wcs_params=wcs_params)
+        result_emm, considered_subgroups, general_params = bso.beam_search(dataset=dataset, attributes=attributes, start_at_order=params[7],
+                                                                           beam_search_params=beam_search_params, stop_at_order=markov_model_params['stop_at_order'],
+                                                                           quality_measure=quality_measure, constraints=constraints, wcs_params=wcs_params)
+        
         # here, as part of the experiment, the rank of the true subgroup is evaluated
-        result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure)
+        result_rank = suo.rank_result_emm(result_emm=result_emm, quality_measure=quality_measure, true_desc_length=params[5])
         result_ranks_one_rep.update(result_rank)
         result_ranks_one_rep.update({quality_measure + '_found_order': general_params['found_order']})
 

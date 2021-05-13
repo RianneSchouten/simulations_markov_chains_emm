@@ -11,16 +11,17 @@ import qualities_orders as qmo
 
 def apply_dominance_pruning(result_set=None, dataset=None, 
                             bin_atts=None, num_atts=None, nom_atts=None, dt_atts=None,
-                            start_at_order=None, ref=None, stop_at_order=None, 
-                            constraint_subgroup_size=None, attributes=None, general_params=None, qm=None, beam_search_params=None):
+                            start_at_order=None, stop_at_order=None, 
+                            constraints=None, attributes=None, 
+                            general_params=None, qm=None, beam_search_params=None):
 
     print('start pruning')
     pruned_descriptions = get_new_descritions(result_set=result_set)
     pruned_subgroups, n_small_groups = get_new_qualities(pruned_descriptions=pruned_descriptions, dataset=dataset, 
-                                                                        bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
-                                                                        dt_atts=dt_atts, start_at_order=start_at_order, ref=ref, stop_at_order=stop_at_order,
-                                                                        constraint_subgroup_size=constraint_subgroup_size, attributes=attributes, 
-                                                                        general_params=general_params, qm=qm, beam_search_params=beam_search_params)
+                                                         bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
+                                                         dt_atts=dt_atts, start_at_order=start_at_order, stop_at_order=stop_at_order,
+                                                         constraints=constraints, attributes=attributes, 
+                                                         general_params=general_params, qm=qm, beam_search_params=beam_search_params)
 
     # append with result_set, to keep the original subgroups as well
     all_subgroups = [result_set.copy()]
@@ -48,9 +49,9 @@ def get_new_descritions(result_set=None):
 
 def get_new_qualities(pruned_descriptions=None, dataset=None, 
                       bin_atts=None, num_atts=None, nom_atts=None, dt_atts=None,
-                      start_at_order=None, ref=None, stop_at_order=None,
-                      constraint_subgroup_size=None,
-                      attributes=None, general_params=None, qm=None, beam_search_params=None):
+                      start_at_order=None, stop_at_order=None,
+                      constraints=None, attributes=None, 
+                      general_params=None, qm=None, beam_search_params=None):
 
     pruned_subgroups = []
     n_small_groups = 0
@@ -63,8 +64,8 @@ def get_new_qualities(pruned_descriptions=None, dataset=None,
                                                                          bin_atts=bin_atts, nom_atts=nom_atts, num_atts=num_atts,
                                                                          dt_atts=dt_atts)
 
-        constraint_check_size = cs.constraint_subgroup_size(subgroup=subgroup, attributes=attributes, general_params=general_params, constraint_subgroup_size=constraint_subgroup_size)
-                    
+        constraint_check_size = cs.constraint_subgroup_size(subgroup=subgroup, attributes=attributes, general_params=general_params, 
+                                                            constraint_subgroup_size=constraints['constraint_subgroup_size'])
         if not constraint_check_size:
             n_small_groups += 1
         else:
@@ -72,12 +73,11 @@ def get_new_qualities(pruned_descriptions=None, dataset=None,
             #subgroup_params, is_replaced = qu.calculate_subgroup_parameters(subgroup=subgroup, attributes=attributes)
             subgroup_params = qmo.calculate_subgroup_parameters(df=dataset, subgroup=subgroup, subgroup_compl=subgroup_compl, idx_sg=idx_sg,
                                                                 attributes=attributes, quality_measure=qm, start_at_order=start_at_order,
-                                                                general_params=general_params, ref=ref)
+                                                                general_params=general_params)
 
             desc_qm = qmo.add_qm(desc=desc, idx_sg=idx_sg, general_params=general_params, 
                                  subgroup_params=subgroup_params, quality_measure=qm, 
-                                 ref=ref, start_at_order=subgroup_params['new_order'], stop_at_order=stop_at_order,
-                                 print_this=False)
+                                 start_at_order=subgroup_params['new_order'], stop_at_order=stop_at_order)
 
             #print(desc_qm.keys())
             pruned_subgroups.append(desc_qm)   

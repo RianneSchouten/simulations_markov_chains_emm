@@ -3,12 +3,9 @@ import pandas as pd
 import dataset as dt
 import emm_rw_dataset_orders as rwdto
 
-def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
-         nr_quantiles=None, quality_measure=None, 
-         w=None, d=None, q=None, m=None, Z=None, seed=None, 
-         constraint_subgroup_size=None, constraint_subgroup_coverage=None,
-         ref=None, start_at_order=None, stop_at_order=None, 
-         wcs_params=None, save_location=None):
+def main(name_dataset=None, seed=None,
+         beam_search_params=None, quality_measure=None, constraints=None,
+         markov_model_params=None, wcs_params=None, save_location=None):
          
     data, attributes, combinations = rwdto.load(name_dataset=name_dataset)  
 
@@ -21,15 +18,16 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
     if save_location is not None:
         save_location_total = save_location + name_dataset + '_' + str(seed)
      
-    result_rw_analysis, considered_subgroups, general_params = rwdto.analysis_rw_dataset(dataset=data, calculate_distribution=calculate_distribution,
-                                                                                         use_distribution=use_distribution, attributes=attributes, 
-                                                                                         nr_quantiles=nr_quantiles, quality_measure=quality_measure, w=w, d=d, q=q, m=m, Z=Z,
-                                                                                         constraint_subgroup_size=constraint_subgroup_size, constraint_subgroup_coverage=constraint_subgroup_coverage,
-                                                                                         ref=ref, start_at_order=start_at_order, stop_at_order=stop_at_order, 
-                                                                                         wcs_params=wcs_params, save_location=save_location_total)
+    result_rw_analysis, considered_subgroups, general_params = rwdto.analysis_rw_dataset(dataset=data, attributes=attributes, 
+                                                                                         beam_search_params=beam_search_params, 
+                                                                                         quality_measure=quality_measure, constraints=constraints,
+                                                                                         markov_model_params=markov_model_params, wcs_params=wcs_params)
 
     # save
-    rw_analysis_info = pd.DataFrame({'m': [m], 'nr_quantiles': [nr_quantiles], 'w': [w], 'd': [d], 'q': [q], 'Z': [Z], 'use_distribution': [use_distribution]})
+    beam_search_params.update(constraints)
+    beam_search_params.update(wcs_params)
+    beam_search_params.update(markov_model_params)
+    rw_analysis_info = pd.DataFrame(beam_search_params)
     general_params_pd = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in general_params.items() ]))
     dfs = {'result_rw_analysis': result_rw_analysis, 'rw_analysis_info': rw_analysis_info, 'considered_subgroups': pd.DataFrame(considered_subgroups), 'general_params_pd': general_params_pd}
 
@@ -42,6 +40,7 @@ def main(name_dataset=None, calculate_distribution=None, use_distribution=None,
 
 if __name__ == '__main__':
 
+    '''
     main(name_dataset='wikispeedia', 
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
@@ -51,7 +50,7 @@ if __name__ == '__main__':
          stop_at_order=1,
          wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
          save_location='./data_output/')
-
+    '''
     '''
      main(name_dataset='movies', 
          calculate_distribution=False, use_distribution=False,
@@ -63,22 +62,21 @@ if __name__ == '__main__':
          wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
          save_location='./data_output/')
     '''
-    '''
+
      # change to w = 25 (1/4 of 94)
      # change to q = 20
      # q has to be smaller than w
 
     main(name_dataset='TIRpatientendata_2', 
-         calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=25, d=3, q=20, m=None, Z=None, seed=20210509,
-         ref='dataset', start_at_order=4,
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=1,
-         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
+         beam_search_params={'b': 4, 'w': 25, 'd': 3, 'q': 20}, 
+         quality_measure='phiaic', # just one !!
+         seed=20210511,
+         markov_model_params={'start_at_order':4, 'stop_at_order':1},
+         constraints={'constraint_subgroup_size':0.1},         
+         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
          save_location='./data_output/')
+
     '''
-'''
     # BEFORE REVISION, OUTPUT VERSION 1 MANUSCRIPT
     main(name_dataset='TIRpatientendata_2', 
          calculate_distribution=False, use_distribution=False,
@@ -87,9 +85,9 @@ if __name__ == '__main__':
          ref='dataset', start_at_order=4,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1, save_location='./data_output/')
-'''
+    '''
 
-'''
+    '''
     main(name_dataset='TIRpatientendata_1', 
          calculate_distribution=False, use_distribution=False,
          nr_quantiles=4, quality_measure='phiaic', # just one !!
@@ -97,4 +95,4 @@ if __name__ == '__main__':
          ref='dataset', start_at_order=2,
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          stop_at_order=1, save_location='./data_output/')
-'''
+    '''
