@@ -16,8 +16,9 @@ data_omegatv_phiwrl <- read_excel("../data_output/results_manuscript/experiment_
 data_09 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_10 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_11 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_13 <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210513_[10, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
 
-total_reps = 10 + 10 + 10 + 10
+total_reps = 10 + 10 + 10 + 10 + 10
 
 length_new_column = 1 * 4 * 10 * 1 * 3 * 3 * 3
 long_data_phiwd <- data_phiwd %>%
@@ -26,7 +27,8 @@ long_data_phiwd <- data_phiwd %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 
 length_new_column = 2 * 4 * 30 * 1 * 3 * 3 * 3
 long_data_phiwrl_omegatv <- data_omegatv_phiwrl %>%
@@ -35,7 +37,8 @@ long_data_phiwrl_omegatv <- data_omegatv_phiwrl %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 sel_long_data_phiwrl_omegatv <- long_data_phiwrl_omegatv[long_data_phiwrl_omegatv$type != 'found_order', ]
 
 length_new_column = 3 * 4 * 10 * 1 * 3 * 3 * 3
@@ -45,7 +48,8 @@ long_data_rest <- data_rest %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 
 length_new_column = 6 * 4 * 10 * 1 * 3 * 3 * 3
 long_data_09 <- data_09 %>%
@@ -54,7 +58,8 @@ long_data_09 <- data_09 %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 sel_long_data_09 <- long_data_09[(long_data_09$measure != 'phiwrl') & (long_data_09$measure != 'omegatv'), ]
 
 long_data_10 <- data_10 %>%
@@ -63,7 +68,8 @@ long_data_10 <- data_10 %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 sel_long_data_10 <- long_data_10[(long_data_10$measure != 'phiwrl') & (long_data_10$measure != 'omegatv'), ]
 
 length_new_column = 6 * 4 * 10 * 1 * 3 * 3 * 3
@@ -73,18 +79,25 @@ long_data_11 <- data_11 %>%
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 sel_long_data_11 <- long_data_11[long_data_11$type != 'found_order', ]
 
-# calculate number of times found dataset order = 1
-sum(long_data_11[(long_data_11$type == 'found_order') &
-                   (long_data_11$value == 1), 'value'])
-nrow(long_data_11[long_data_11$type == 'found_order', 'value'])
+length_new_column = 6 * 4 * 10 * 1 * 3 * 3 * 3
+long_data_13 <- data_13 %>%
+  pivot_longer(
+    cols = names(data_13)[12:dim(data_13)[2]],
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(true_desc_length, global_model_order, start_at_order, p))
+sel_long_data_13 <- long_data_13[long_data_13$type != 'found_order', ]
 
 long_data <- rbind(long_data_phiwd, long_data_rest,
                    sel_long_data_phiwrl_omegatv,
                    sel_long_data_09, sel_long_data_10, 
-                   sel_long_data_11) %>%
+                   sel_long_data_11, sel_long_data_13) %>%
   arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
           as.integer(ncovs), as.integer(subgroup_orders)) %>%
   mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
