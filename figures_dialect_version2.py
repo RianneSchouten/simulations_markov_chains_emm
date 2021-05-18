@@ -3,15 +3,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 import itertools as it
-import matplotlib.colors as colors
 
 import emm_rw_dataset_orders as rwdto
 import dataset as dt
 import qualities_orders as qmo
 
+### script contains code for figures in revised manuscript (version 2)
+
 def load(name_dataset=None):
 
-    location = 'C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/data_output/results_revised_manuscript/' + name_dataset + '.xlsx'
+    location = 'data_output/results_revised_manuscript/real_world_data_experiments/' + name_dataset + '.xlsx'
     sheets = pd.read_excel(location, sheet_name=['result_rw_analysis', 'rw_analysis_info', 'considered_subgroups', 'general_params_pd'])
 
     result_rw_analysis = sheets['result_rw_analysis']
@@ -85,7 +86,7 @@ def make_one_pic(data=None, x_names=None, y_names=None, order=None, dif=None, ti
     fig.savefig(name_fig, bbox_inches='tight')
 
 
-### DIALECT dataset 2, long sequences, section 6.1 in revised manuscript
+### DIALECT experiments in Sect. 6.1.1, long sequences,
 
 result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = load(name_dataset='TIRpatientendata_2_20210514_resultset')
 results = result_rw_analysis.copy()
@@ -104,10 +105,10 @@ new_index = list(it.product(new_order_states, repeat=2))
 data_new_columns = data[new_order_states]
 data_new_values = data_new_columns.reindex(new_index)
 
-'''
+
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_index, order=2, dif = False,
                    title='Parameters entire dataset', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_general.png')
-'''
+
 
 # figure sg 0
 sgn = 0
@@ -129,6 +130,7 @@ new_order_states = ['BR2', 'BR1', 'IR', 'AR1', 'AR2']
 x_names = [('start')] + list(new_order_states)
 new_columns = data[new_order_states]
 data_new_values = new_columns.reindex(new_order_states).copy()
+
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_order_states, order=1, dif = False,
                    title='Parameter estimates subgroup 1', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_sg1.png')
 
@@ -188,7 +190,7 @@ data_new_values_5 = data_new_columns_5.reindex(new_index)
 
 '''
 fig = make_one_pic(data=data_new_values_5, x_names=x_names, y_names=new_index, order=2, dif = False,
-                   title='Parameters 5', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_subgroup5.png')
+                   title='Parameters 5', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_sg5.png')
 '''
 '''
 fig = make_one_pic(data=data_new_values_5, x_names=x_names, y_names=new_index, order=2, dif = True,
@@ -233,7 +235,8 @@ cb.ax.tick_params(labelsize=15)
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.8, hspace=None)
 fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_long_difference_sg2_sg6_oneplot.png', bbox_inches='tight')
 
-### Dataset 1, Experiment 2, Sect. 6.1
+### DIALECT experiments in Sect. 6.1.2, short sequences
+
 result_rw_analysis, rw_analysis_info, considered_subgroups, general_params_pd = load(name_dataset='TIRpatientendata_1_20210514_resultset')
 results = result_rw_analysis.copy()
 
@@ -250,10 +253,8 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data[new_order_states]
 data_new_values = new_columns.reindex(new_order_states).copy()
 
-'''
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_order_states, order=1, dif = False,
                    title='Parameters entire dataset', name_fig='figures/Figures_revised_manuscript/visualization_dialect_short_general.png')
-'''
 
 # figure sg 0, save parameters as well
 sgn = 0

@@ -3,12 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as grd
 import itertools as it
-import matplotlib.colors as colors
 
 import emm_rw_dataset_orders as rwdto
 import dataset as dt
 import qualities_orders as qmo
-import mc_functions_orders as fo
+
+### script contains code to make figures for first version of manuscript
 
 def load(name_dataset=None):
 
