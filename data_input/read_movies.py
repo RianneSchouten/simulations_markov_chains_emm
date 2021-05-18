@@ -37,7 +37,8 @@ def read_movies(name_dataset=None):
     combinations = pd.DataFrame()
     dfs = {'data': data, 'summary': summary, 'columns_and_missings': pd.DataFrame(columns_and_missings), 
            'df_attributes': df_attributes, 'combinations': combinations}
-    location_processed = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
+    #location_processed = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
+    location_processed = name_dataset + '_preprocessed.xlsx'
 
     # somehow, the very last cell (page_type_2 of last row) becomes an empty cell in the excel sheet
     # for now I just remove that row
@@ -52,13 +53,15 @@ def read_movies(name_dataset=None):
 def import_descriptives(imported_data=None, name_descriptives='user'):
 
     if name_descriptives == 'user':
-        df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.user', header=None, sep="\|")
+        #df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.user', header=None, sep="\|")
+        df = pd.read_csv('u.user', header=None, sep="\|")
         print(df.head(10))
         df.columns = ['userid', 'age', 'gender', 'occupation', 'zipcode']
         on = 'userid'
         skip_attributes = ['zipcode']
     elif name_descriptives == 'item':
-        df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.item', sep="\|", encoding='latin-1', header=None)
+        #df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.item', sep="\|", encoding='latin-1', header=None)
+        df = pd.read_csv('u.item', sep="\|", encoding='latin-1', header=None)
         print(df.head(10))        
         print(df.shape)        
         df.columns = ['itemid', 'title', 'releasedate', 'videodate', 'imdburl', 'unknown', 
@@ -77,8 +80,8 @@ def import_descriptives(imported_data=None, name_descriptives='user'):
 
 def import_dataset(name_dataset=None):
 
-    if name_dataset == 'movies':
-        df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.data', header=None, sep="\t")
+    #df = pd.read_csv('C:/Users/20200059/Documents/Projects/SequentialData/data_input/u.data', header=None, sep="\t")
+    df = pd.read_csv('u.data', header=None, sep="\t")
     print(df)
     print(df.shape)
     print(df.dtypes)
@@ -123,7 +126,7 @@ def make_selection(data=None, name_dataset=None):
     print('number of users after removing length 1 sequences', len(data_selected['userid'].unique()))
     print('number of events after removing length 1 sequences', data_selected.shape)  
 
-    data_selected.corr().to_excel('C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_correlation.xlsx')
+    data_selected.corr().to_excel(name_dataset + '_correlation.xlsx')
 
     data_selected['state1'] = data_selected.state1.astype(object)
     

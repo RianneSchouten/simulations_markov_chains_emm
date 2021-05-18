@@ -39,57 +39,33 @@ def main(name_dataset=None, seed=None,
     print(result_rw_analysis)
 
 if __name__ == '__main__':
-
    
     main(name_dataset='movies', 
          beam_search_params={'w': 25, 'd': 3, 'q': 20, 'b': 4},
-         quality_measure='phiaic', # just one !!
+         quality_measure='phiaic', 
          markov_model_params={'start_at_order': 4, 'stop_at_order': 1},
          constraints={'constraint_subgroup_size': 0.1},
          seed=20210514,
-         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
-         save_location='./data_output/')
+         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, 
+         save_location='./data_output/results_revised_manuscript/real_world_data_experiments/')
     
     '''
-     # change to w = 25 (1/4 of 94)
-     # change to q = 20
-     # q has to be smaller than w
-
     main(name_dataset='TIRpatientendata_2', 
          beam_search_params={'b': 4, 'w': 25, 'd': 3, 'q': 20}, 
-         quality_measure='phiaic', # just one !!
+         quality_measure='phiaic', 
          seed=20210514,
          markov_model_params={'start_at_order':4, 'stop_at_order':1},
          constraints={'constraint_subgroup_size':0.1},         
-         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
-         save_location='./data_output/')
+         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, 
+         save_location='./data_output/results_revised_manuscript/real_world_data_experiments/')
 
     main(name_dataset='TIRpatientendata_1', 
          beam_search_params={'b': 4, 'w': 25, 'd': 3, 'q': 20}, 
-         quality_measure='phiaic', # just one !!
+         quality_measure='phiaic', 
          seed=20210514,
          markov_model_params={'start_at_order':2, 'stop_at_order':1},
          constraints={'constraint_subgroup_size':0.1},         
-         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, # twice the size of w
-         save_location='./data_output/')
-    '''
-    '''
-    # BEFORE REVISION, VERSION 1 MANUSCRIPT
-    main(name_dataset='TIRpatientendata_2', 
-         calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
-         ref='dataset', start_at_order=4,
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=1, save_location='./data_output/')
+         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50}, 
+         save_location='./data_output/results_revised_manuscript/real_world_data_experiments/')
     '''
 
-    '''
-    main(name_dataset='TIRpatientendata_1', 
-         calculate_distribution=False, use_distribution=False,
-         nr_quantiles=4, quality_measure='phiaic', # just one !!
-         w=20, d=3, q=25, m=None, Z=None, seed=20210114,
-         ref='dataset', start_at_order=2,
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
-         stop_at_order=1, save_location='./data_output/')
-    '''

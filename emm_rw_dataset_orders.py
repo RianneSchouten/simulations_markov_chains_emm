@@ -21,14 +21,13 @@ def analysis_rw_dataset(dataset=None, attributes=None,
 def load(name_dataset=None):
 
     print('load data')
-    location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
-    sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
 
-    #location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
-    #sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'unique_per_seq_length', 'df_attributes', 'combinations'], index_col=0)
-
-    #location = 'C:/Users/20200059/Documents/Projects/SequentialData/data_input/' + name_dataset + '_preprocessed.xlsx'
-    #sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
+    if name_dataset == 'movies':
+        location = 'data_input/' + name_dataset + '_preprocessed.xlsx'
+        sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
+    else:
+        location = 'C:/Users/20200059/Documents/Projects/Dialect/Diabetes ZGT data/' + name_dataset + '_preprocessed.xlsx'
+        sheets = pd.read_excel(location, sheet_name=['data', 'summary', 'columns_and_missings', 'df_attributes', 'combinations'], index_col=0)
 
     data = sheets['data']
     df_attributes = sheets['df_attributes']
@@ -38,7 +37,6 @@ def load(name_dataset=None):
     skip_attributes = [value for value in df_attributes['skip_attributes'].values if str(value) != 'nan']
     id_attribute = df_attributes['id_attribute'][0]
     first_timepoint = df_attributes['first_timepoint'][0]
-    #descriptives = [value for value in df_attributes['descriptives'] .values if str(value) != 'nan']   
 
     outcome_attribute = None 
     attributes = {'time_attributes': time_attributes, 'skip_attributes': skip_attributes,
