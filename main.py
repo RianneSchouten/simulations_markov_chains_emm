@@ -1,6 +1,3 @@
-#import os
-#import beam_search as bs
-#import experiment as ex
 import experiment_orders as exo
 
 def main(subgroup_orders=None,
@@ -30,7 +27,6 @@ def main(subgroup_orders=None,
 
    
 if __name__ == '__main__':
-
 
     # run initial starting behaviour again, with/without redundancy techniques to see if that makes a difference
     main(subgroup_orders = [0],
