@@ -31,18 +31,17 @@ def main(subgroup_orders=None,
    
 if __name__ == '__main__':
 
-    '''
-    # run with redundancy techniques to see if that makes a difference
-    # turns out the redundancy techniques do not make a difference for the synthetic data experiment
-    main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
+
+    # run initial starting behaviour again, with/without redundancy techniques to see if that makes a difference
+    main(subgroup_orders = [0],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
-         w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
-         start_at_order=4, save_location='./data_output/results_revised_manuscript/experiment_higherorders',
-         constraint_subgroup_size=0.1, constraint_subgroup_coverage=None,
-         nreps=10, seed=20210509, ncovs=[20, 10, 5],
-         N=[100], T=[200, 50, 10], S=[10, 5, 2],
-         wcs_params={'gamma': 0.9, 'stop_number_description_selection': 50})
-    '''
+         markov_model_params={'start_at_order': [1], 'stop_at_order': 0},
+         beam_search_params={'b': 8, 'w': 25, 'd': 3, 'q': 20},
+         constraints={'constraint_subgroup_size': 0.1},
+         simulation_params={'nreps': 10, 'N': [1000,500,100], 'ncovs': [20,10,5], 'T': [10,5,2], 'S': [10,5,2], 'p': [0.5], 'true_desc_length': [2], 'global_model_order': [1]},
+         wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50},
+         seed=20210515, save_location='./data_output/results_revised_manuscript/experiment_initial_starting_behaviour')
+
     '''
     # sensitivity analysis: varying global model order, varying start parameter
     main(subgroup_orders = [1,2,3,4],
@@ -54,18 +53,18 @@ if __name__ == '__main__':
          wcs_params={'run': False, 'gamma': 0.9, 'stop_number_description_selection': 50},
          seed=20210512, save_location='./data_output/results_revised_manuscript/experiment_varying_globalmodel_and_start_parameter'
          )
-
+    
     # sensitivity analysis: varying sample size and varying description lengths
     main(subgroup_orders = [1,2,3,4],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
          markov_model_params={'start_at_order': [4], 'stop_at_order':1},
          beam_search_params={'b': 8, 'w': 25, 'd': 3, 'q': 20},
          constraints={'constraint_subgroup_size': 0.1},
-         simulation_params={'nreps': 10, 'N': [100], 'ncovs': [20], 'T': [50], 'S': [5], 'p': [0.35,0.5], 'true_desc_length': [1,2], 'global_model_order': [1]},
+         simulation_params={'nreps': 10, 'N': [100], 'ncovs': [5, 10], 'T': [50], 'S': [5], 'p': [0.35,0.5], 'true_desc_length': [1,2], 'global_model_order': [1]},
          wcs_params={'run': False, 'gamma': 0.9, 'stop_number_description_selection': 50},
-         seed=20210512, save_location='./data_output/results_revised_manuscript/experiment_varying_sample_size'
-         )    '''
-    
+         seed=20210513, save_location='./data_output/results_revised_manuscript/experiment_varying_sample_size'
+         )        
+    '''
     '''
     # EXPERIMENTS BEFORE REVISION
     # main analysis

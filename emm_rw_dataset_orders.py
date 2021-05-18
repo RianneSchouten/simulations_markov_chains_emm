@@ -4,7 +4,6 @@ import itertools as it
 
 import beam_search_orders as bso
 import summaries_orders as suo
-import distribution_false_discoveries_orders as dfdo
 
 def analysis_rw_dataset(dataset=None, attributes=None, 
                         beam_search_params=None, quality_measure=None, constraints=None,

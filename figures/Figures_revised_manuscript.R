@@ -7,7 +7,7 @@ library(xtable)
 
 setwd("C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/figures/")
 
-#### Simulation results and figures for manuscript january 2021 ####
+#### Simulation results and figures for revised manuscript may 2021 ####
 
 data_phiwd <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201125_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
@@ -76,11 +76,6 @@ long_data_11 <- data_11 %>%
   mutate(measure = gsub("_.*", "", measure))
 sel_long_data_11 <- long_data_11[long_data_11$type != 'found_order', ]
 
-long_data_10 %>% filter(measure == 'phiwd') %>% 
-  filter(T==50) %>% filter(S==5) %>% filter(ncovs==20) %>%
-  filter(subgroup_orders == 2) %>% filter(type == 'order')
-
-
 # calculate number of times found dataset order = 1
 sum(long_data_11[(long_data_11$type == 'found_order') &
                    (long_data_11$value == 1), 'value'])
@@ -111,8 +106,11 @@ plot_data <- long_data %>%
 
 ranks <- plot_data %>% 
   filter(type == 'rank') %>%
+  filter(measure != 'phibic') %>%
+  filter(measure != 'phiaicc') %>%
+  mutate(measure = recode(measure, phiaic = "phibic, phiaic, phiaicc")) %>%
   ggplot(aes(y = value, x = true_subgroup_order)) +
-  geom_boxplot(aes(fill = states), outlier.shape = NA) + #, outlier.alpha = 0.2, outlier.size=0.5) +
+  geom_boxplot(aes(fill = states), outlier.shape = NA) + 
   facet_grid(measure ~ timepoints, labeller = label_both) + 
   labs(title = paste('Boxplots of the rank of the true subgroup in the top-20', 
                      sep = " ", collapse = NULL),
@@ -134,7 +132,7 @@ ranks <- plot_data %>%
 ranks
 
 name <- paste('../figures/Figures_revised_manuscript/ranks_20ncovs.eps', sep = "", collapse = NULL)
-ggsave(name, width = 20, height = 30, units = "cm")
+ggsave(name, width = 20, height = 24, units = "cm")
 
 plot_data <- long_data %>%
   filter(N == 100) %>%
@@ -210,7 +208,7 @@ ranks <- plot_data %>%
   facet_grid(measure ~ timepoints, labeller = label_both) + 
   labs(title = paste('Boxplots of the rank of the true subgroup in the top-20', 
                      sep = " ", collapse = NULL),
-       fill = 'ncovs') + 
+       fill = 'Z') + 
   xlab('Number of data sequences') + 
   ylab('Rank') +
   guides(fill = guide_legend(direction = "horizontal")) +
@@ -244,7 +242,8 @@ orders <- plot_data %>%
   geom_bar(stat = "identity", position = position_dodge(), colour="black") + 
   facet_grid(measure ~ timepoints, labeller = label_both) + 
   labs(title = paste('Percentage of nreps where the true subgroup order is found', 
-                     sep = " ", collapse = NULL)) +
+                     sep = " ", collapse = NULL),
+       fill = 'Z') +
   xlab('Number of data sequences') + 
   ylab('Percentage') +
   guides(fill = guide_legend(direction = "horizontal")) +
@@ -265,103 +264,6 @@ orders
 
 name <- paste('../figures/Figures_revised_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 16, units = "cm")
-
-##
-
-# extra check whether redundancy techniques influence synthetic data experiments
-# turns out: no
-
-temp <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210509_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-head(temp)
-
-total_reps = 10
-
-length_new_column = 6 * 4 * 10 * 1 * 3 * 3 * 3
-long_data <- temp %>%
-  pivot_longer(
-    cols = names(temp)[9:dim(temp)[2]],
-    names_to = "measure",
-    values_to = "value") %>%
-  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
-
-long_data <- long_data %>%
-  arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
-          as.integer(ncovs), as.integer(subgroup_orders)) %>%
-  mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
-  mutate(states = ordered(factor(S), 
-                          levels = as.character(sort(as.integer(unique(S)))))) %>%
-  mutate(timepoints = ordered(factor(T), 
-                              levels = as.character(sort(as.integer(unique(T)))))) %>%
-  mutate(ncovs = ordered(factor(ncovs), 
-                         levels = as.character(sort(as.integer(unique(ncovs)))))) %>%
-  mutate(N = ordered(factor(N), 
-                     levels = as.character(sort(as.integer(unique(N)))))) %>%
-  mutate(measure = ordered(factor(measure), 
-                           levels = c('phibic', 'phiaic', 'phiaicc', 'phiwd', 'omegatv', 'phiwrl')))
-
-# two figures
-plot_data <- long_data %>%
-  filter(N == 100) %>%
-  filter(ncovs == 20)
-
-ranks <- plot_data %>% 
-  filter(type == 'rank') %>%
-  ggplot(aes(y = value, x = true_subgroup_order)) +
-  geom_boxplot(aes(fill = states), outlier.shape = NA) + #, outlier.alpha = 0.2, outlier.size=0.5) +
-  facet_grid(measure ~ timepoints, labeller = label_both) + 
-  labs(title = paste('Boxplots of the rank of the true subgroup in the top-20', 
-                     sep = " ", collapse = NULL),
-       fill = 'states') + 
-  xlab('True subgroup order') + 
-  ylab('Rank') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        #axis.title.y = element_text(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()) + 
-  scale_fill_manual(values=c("#deebf7", "#9ecae1", "#3182bd"))
-
-ranks
-
-orders <- long_data %>% 
-  filter(ncovs == 20) %>%
-  filter(type == 'order') %>%
-  #filter(measure != 'phiwrl') %>%
-  #filter(measure != 'omegatv') %>%
-  #filter(measure == 'phiaic' | measure == 'phiwd') %>%
-  #mutate(measure = recode(measure, phiaic = "phiaic, phibic, phiaicc")) %>%
-  group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
-  summarize(perc_true_order = 
-              100 * sum(subgroup_orders == 
-                          value, na.rm = TRUE) / 10) %>%
-  ggplot(aes(x = true_subgroup_order, y = perc_true_order, fill = states)) + 
-  geom_bar(stat = "identity", position = position_dodge(), colour="black") + 
-  facet_grid(measure ~ timepoints, labeller = label_both) + 
-  labs(title = paste('Percentage of nreps where the true subgroup order is found', 
-                     sep = " ", collapse = NULL)) +
-  xlab('Number of data sequences') + 
-  ylab('Percentage') +
-  guides(fill = guide_legend(direction = "horizontal")) +
-  theme(legend.position="top",
-        legend.justification="right",
-        plot.title = element_text(vjust=-4), 
-        legend.box.margin = margin(-1,0,0,0, "line"),
-        #axis.title.y = element_text(),
-        panel.grid.major.x = element_blank(),
-        panel.grid.minor.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.minor.y = element_blank()) +
-  scale_y_continuous(labels=seq(0, 100, 25), breaks=seq(0,100,25)) + 
-  expand_limits(y = c(0, 100)) + 
-  scale_fill_manual(values=c("#e5f5e0", "#a1d99b", "#31a354"))
-
-orders
 
 # sensitivity analysis
 
@@ -402,10 +304,7 @@ long_data <- rbind(long_data_50,long_data_10200) %>%
   mutate(s = ordered(factor(start_at_order), levels = as.character(sort(as.integer(unique(start_at_order)))))) %>%
   mutate(sglobalmodel = interaction(globalmodel, s))
 
-long_data %>% filter(measure == 'phiwd') %>% filter(global_model_order == '1') %>%
-  filter(start_at_order == '4') %>% group_by(subgroup_orders, type) %>% summarise(sum(value))
-
-plot_global_varying_s <- long_data %>% 
+long_data %>% 
   filter(type == 'rank') %>%
   ggplot(aes(y = measure, x = value)) + 
   geom_boxplot(aes(fill = true_subgroup_order), outlier.shape = NA) + #, outlier.alpha = 0.2, outlier.size=0.5) +
@@ -427,10 +326,6 @@ plot_global_varying_s <- long_data %>%
         panel.grid.minor.y = element_blank()) + 
   scale_fill_manual(values=c("#fde0dd", "#fa9fb5", "#e0f3db", "#a8ddb5"))
 
-plot_global_varying_s
-name <- paste('../figures/Figures_revised_manuscript/varying_global_model_s.eps', sep = "", collapse = NULL)
-ggsave(name, width = 20, height = 20, units = "cm")
-
 table <- long_data %>% filter(type == 'rank') %>%
   filter(true_subgroup_order %in% c(2,3)) %>%
   filter(measure == 'phiwd') %>%
@@ -439,18 +334,29 @@ table <- long_data %>% filter(type == 'rank') %>%
 
 # varying subgroup size
 
-data <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210512_[10, [100], [20], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
+data20 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210512_[10, [100], [20], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
+data510 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210513_[10, [100], [5, 10], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
+
 total_reps = 10
 length_new_column = 6 * 4 * 10 * 1 * 1 * 1 * 1 * 1 * 1 * 2 * 2
-long_data <- data %>%
+long_data_20 <- data20 %>%
   pivot_longer(
-    cols = names(data)[12:dim(data)[2]],
+    cols = names(data20)[12:dim(data20)[2]],
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
   mutate(measure = gsub("_.*", "", measure))
 
-long_data <- long_data %>%
+length_new_column = 6 * 4 * 10 * 1 * 1 * 2 * 1 * 1 * 1 * 2 * 2
+long_data_510 <- data510 %>%
+  pivot_longer(
+    cols = names(data510)[12:dim(data510)[2]],
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure))
+
+long_data <- rbind(long_data_20, long_data_510) %>%
   arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
           as.integer(ncovs), as.integer(subgroup_orders), 
           as.integer(global_model_order), 
@@ -465,12 +371,13 @@ long_data <- long_data %>%
   mutate(s = ordered(factor(start_at_order), levels = as.character(sort(as.integer(unique(start_at_order)))))) %>%
   mutate(sglobalmodel = interaction(globalmodel, s)) %>%
   mutate(desc = ordered(factor(true_desc_length))) %>%
-  mutate(p = ordered(factor(p)))
+  mutate(p = ordered(factor(p))) %>%
+  mutate(descp = interaction(desc, p))
 
 long_data %>% filter(type == 'rank') %>%
   ggplot(aes(y = measure, x = value)) + 
   geom_boxplot(aes(fill = true_subgroup_order), outlier.shape = NA) + #, outlier.alpha = 0.2, outlier.size=0.5) +
-  facet_grid(desc ~ p, labeller = label_both) +
+  facet_grid(descp ~ ncovs, labeller = label_both) +
   labs(title = paste('Boxplots of the rank of the true subgroup in the top-20', 
                      sep = " ", collapse = NULL),
        fill = 'True subgroup order') + 
@@ -488,3 +395,8 @@ long_data %>% filter(type == 'rank') %>%
         panel.grid.minor.y = element_blank()) + 
   scale_fill_manual(values=c("#fde0dd", "#fa9fb5", "#e0f3db", "#a8ddb5"))
 
+table <- long_data %>% filter(type == 'rank') %>%
+  filter(true_subgroup_order %in% c(1,4)) %>%
+  filter(measure == 'phiwrl') %>%
+  group_by(measure, desc, p, ncovs, true_subgroup_order) %>% 
+  summarise(median(value), IQR(value), n()) 
