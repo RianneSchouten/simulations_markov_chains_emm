@@ -7,7 +7,7 @@ library(xtable)
 
 setwd("C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/figures/")
 
-#### Simulation results and figures for revised manuscript may 2021 ####
+#### Simulation results and figures for revised manuscript May 2021 ####
 
 data_phiwd <- read_excel("../data_output/results first paper draft/experiment_higherorders_20201125_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
@@ -168,20 +168,34 @@ orders
 name <- paste('../figures/Figures_revised_manuscript/orders_20ncovs.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 30, units = "cm")
 
-# subgroups of order 0
+#### Subgroups with exceptional starting behaviour ####
 
-data <- read_excel("../data_output/results_manuscript/experiment_zero_order_subgroups_20210112_10nreps_[100, 500, 1000]_[10, 5, 2]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_12 <- read_excel("../data_output/results_manuscript/experiment_zero_order_subgroups_20210112_10nreps_[100, 500, 1000]_[10, 5, 2]_[10, 5, 2]_[20, 10, 5].xlsx")
+
+# name is too long, but we have to load this dataset
+#data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515_[10, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
+data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515.xlsx")
 
 length_new_column <- 6 * 1 * 10 * 3 * 3 * 3 * 3
-data <- data %>%
+data_12 <- data_12 %>%
   pivot_longer(
-    cols = names(data)[9:dim(data)[2]],
+    cols = names(data_12)[9:dim(data_12)[2]], 
     names_to = "measure",
     values_to = "value") %>%
   add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
-  mutate(measure = gsub("_.*", "", measure))
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(refs))
 
-long_data <- data %>%
+data_15 <- data_15 %>%
+  pivot_longer(
+    cols = names(data_15)[12:dim(data_15)[2]], 
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(true_desc_length, global_model_order, start_at_order, p))
+
+long_data <- rbind(data_12, data_15) %>%
   arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
           as.integer(ncovs), as.integer(subgroup_orders)) %>%
   mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
@@ -265,7 +279,9 @@ orders
 name <- paste('../figures/Figures_revised_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 16, units = "cm")
 
-# sensitivity analysis
+#### Sensitivity Analysis ####
+
+## varying global model, varying start parameter s
 
 data50 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_globalmodel_and_start_parameter_20210511_[10, [100], [20], [50], [5], [0.5], [2], [1, 3]].xlsx")
 total_reps = 10
@@ -332,7 +348,7 @@ table <- long_data %>% filter(type == 'rank') %>%
   group_by(measure, T, globalmodel, s, true_subgroup_order) %>% 
   summarise(median(value), IQR(value)) 
 
-# varying subgroup size
+## varying subgroup size and description length
 
 data20 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210512_[10, [100], [20], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
 data510 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210513_[10, [100], [5, 10], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
