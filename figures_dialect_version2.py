@@ -43,7 +43,7 @@ def make_one_pic(data=None, x_names=None, y_names=None, order=None, dif=None, ti
 
     if order == 1:
         height = 6
-        width_ratio = [14,1]
+        width_ratio = [14,0.5]
         aspect = 1.
         ysize = 15
         titlesize = 18
@@ -82,6 +82,7 @@ def make_one_pic(data=None, x_names=None, y_names=None, order=None, dif=None, ti
     colorAx = plt.subplot(gs[1])
     cb = plt.colorbar(p, cax=colorAx)
     cb.set_clim(min_value, max_value)
+    colorAx.yaxis.set_ticks_position('left')
         
     fig.savefig(name_fig, bbox_inches='tight')
 
@@ -105,10 +106,10 @@ new_index = list(it.product(new_order_states, repeat=2))
 data_new_columns = data[new_order_states]
 data_new_values = data_new_columns.reindex(new_index)
 
-
+'''
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_index, order=2, dif = False,
                    title='Parameters entire dataset', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_general.png')
-
+'''
 
 # figure sg 0
 sgn = 0
@@ -129,10 +130,12 @@ data = subgroup_params_0['probs']['prob_1']
 new_order_states = ['BR2', 'BR1', 'IR', 'AR1', 'AR2']
 x_names = [('start')] + list(new_order_states)
 new_columns = data[new_order_states]
-data_new_values = new_columns.reindex(new_order_states).copy()
+data_new_values0 = new_columns.reindex(new_order_states).copy()
 
-fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_order_states, order=1, dif = False,
+
+fig = make_one_pic(data=data_new_values0, x_names=x_names, y_names=new_order_states, order=1, dif = False,
                    title='Parameter estimates subgroup 1', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_sg1.png')
+
 
 # figure subgroup 1, calculate difference with subgroup 0
 sgn = 1
@@ -158,10 +161,10 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data_dif_10[new_order_states]
 data_new_values_10 = new_columns.reindex(new_order_states).copy()
 
-'''
+
 fig = make_one_pic(data=data_new_values_10, x_names=x_names, y_names=new_order_states, order=1, dif = True,
                    title='Difference between SG 2 and SG 1', name_fig='figures/Figures_revised_manuscript/visualization_dialect_long_difference_sg2_sg1.png')
-'''
+
 
 # figure subgroup 5, calculate difference with general params
 sgn = 5
@@ -199,21 +202,29 @@ fig = make_one_pic(data=data_new_values_5, x_names=x_names, y_names=new_index, o
 
 # subgroup 1 and 5 in one figure
 fig = plt.figure(figsize=(18, 16), dpi=300, facecolor='w', edgecolor='k')
-gs = grd.GridSpec(1, 3, width_ratios=[18, 14, 0.1])
+gs = grd.GridSpec(1, 4, width_ratios=[18, 1, 18, 1])
 
 # first
 ax0 =  plt.subplot(gs[0])
-p0 = ax0.imshow(data_new_values_10, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+p0 = ax0.imshow(data_new_values, aspect=0.5, vmin=0, vmax=1, cmap=plt.get_cmap('Purples'))
 ax0.set_xticklabels(x_names, rotation=45)
-ax0.set_yticklabels(x_names)
+ax0.set_yticks(np.arange(len(new_index)))
+ax0.set_yticklabels(new_index)
 for tick in ax0.xaxis.get_major_ticks():
     tick.label.set_fontsize(15)
 for tick in ax0.yaxis.get_major_ticks():
     tick.label.set_fontsize(18)
-plt.title('Difference between SG 2 and SG 1', fontsize=18)
+plt.title('Parameter estimates global model', fontsize=20)
+
+# colorbar
+cbaxes0 = fig.add_axes([0.4, 0.171, 0.02, 0.64])  
+cb = plt.colorbar(p0, cax=cbaxes0)
+cb.set_clim(0,1)
+cb.ax.tick_params(labelsize=15)
+cbaxes0.yaxis.set_ticks_position('left')
 
 # second
-ax1 =  plt.subplot(gs[1])
+ax1 =  plt.subplot(gs[2])
 p1 = ax1.imshow(data_new_values_5, aspect=0.5, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
 ax1.set_xticklabels(x_names, rotation=45)
 ax1.set_yticks(np.arange(len(new_index)))
@@ -225,15 +236,15 @@ for tick in ax1.yaxis.get_major_ticks():
 plt.title('Difference SG 6 and global model', fontsize=20)
 
 # colorbar
-cbaxes = fig.add_axes([0.82, 0.185, 0.02, 0.62])  
-#colorAx = plt.subplot(gs[2])
-cb = plt.colorbar(p1, cax=cbaxes)
+cbaxes1 = fig.add_axes([0.84, 0.171, 0.02, 0.64])  
+cb = plt.colorbar(p1, cax=cbaxes1)
 cb.set_clim(-0.5,0.5)
 cb.ax.tick_params(labelsize=15)
-#colorAx.yaxis.set_ticks_position('right')
+cbaxes1.yaxis.set_ticks_position('left')
 
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.8, hspace=None)
-fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_long_difference_sg2_sg6_oneplot.png', bbox_inches='tight')
+#fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_long_difference_sg2_sg6_oneplot.png', bbox_inches='tight')
+fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_long_global_difference_sg6_oneplot.png', bbox_inches='tight')
 
 ### DIALECT experiments in Sect. 6.1.2, short sequences
 
@@ -253,8 +264,10 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data[new_order_states]
 data_new_values = new_columns.reindex(new_order_states).copy()
 
+'''
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_order_states, order=1, dif = False,
                    title='Parameters entire dataset', name_fig='figures/Figures_revised_manuscript/visualization_dialect_short_general.png')
+'''
 
 # figure sg 0, save parameters as well
 sgn = 0
@@ -284,7 +297,7 @@ fig = make_one_pic(data=data_new_values_0, x_names=x_names, y_names=new_order_st
 '''
 
 # figure sg 1, save parameters as well
-sgn = 1
+sgn = 2
 print(sgn)
 sg = results.loc[results.sg == sgn, ]
 desc_series = sg.iloc[0, ].dropna().drop(['sg'])
@@ -292,22 +305,22 @@ print(desc_series)
 quals = sg.iloc[1, ].dropna()
 order = int(quals.loc['best_order'])
 
-subgroup_params_1, idx = recalculate_parameters(quality_measure=quality_measure, best_order=order,
+subgroup_params_2, idx = recalculate_parameters(quality_measure=quality_measure, best_order=order,
                                                     df=dataset, cols=cols, attributes=attributes, 
                                                     quals=quals, general_params=general_params,
                                                     desc_series=desc_series,
                                                     bin_atts=bin_atts, num_atts=num_atts, nom_atts=nom_atts, dt_atts=dt_atts)
 
-data = subgroup_params_1['probs']['prob_1']
-data_dif_1 = subgroup_params_1['probs']['prob_1'] - general_params['probs']['prob_1']
+data = subgroup_params_2['probs']['prob_1']
+data_dif_2 = subgroup_params_2['probs']['prob_1'] - general_params['probs']['prob_1']
 new_order_states = ['AA', 'AB', 'AC', 'AE', 'AF', 'AG', 'AH']
 x_names = [('start')] + list(new_order_states)
-new_columns = data_dif_1[new_order_states]
-data_new_values_1 = new_columns.reindex(new_order_states).copy()
+new_columns = data_dif_2[new_order_states]
+data_new_values_2 = new_columns.reindex(new_order_states).copy()
 
 '''
-fig = make_one_pic(data=data_new_values_1, x_names=x_names, y_names=new_order_states, order=1, dif = True,
-                   title='Difference SG 2 and global model', name_fig='figures/Figures_revised_manuscript/visualization_dialect_short_difference_sg2_global_model.png')
+fig = make_one_pic(data=data_new_values_2, x_names=x_names, y_names=new_order_states, order=1, dif = True,
+                   title='Difference SG 3 and global model', name_fig='figures/Figures_revised_manuscript/visualization_dialect_short_difference_sg3_global_model.png')
 '''
 
 # figure sg 13, save parameters as well
@@ -337,39 +350,78 @@ fig = make_one_pic(data=data_new_values_13, x_names=x_names, y_names=new_order_s
                    title='Difference SG 14 and global model', name_fig='figures/Figures_revised_manuscript/visualization_dialect_short_difference_sg14_global_model.png')
 '''
 
-# sg 0 and 13 in one plot
+# sg 0, 2 and 13 in one plot
 fig = plt.figure(figsize=(18, 16), dpi=300, facecolor='w', edgecolor='k')
-gs = grd.GridSpec(1, 3, width_ratios=[14, 14, 1])
+#gs = grd.GridSpec(1, 3, width_ratios=[14, 14, 1])
+gs = grd.GridSpec(2, 4, width_ratios=[14, 0.5, 14, 0.5])
 
-# first
+# global
 ax0 =  plt.subplot(gs[0])
-p0 = ax0.imshow(data_new_values_0, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+p0 = ax0.imshow(data_new_values, aspect=1, vmin=0, vmax=1, cmap=plt.get_cmap('Purples'))
 ax0.set_xticklabels(x_names, rotation=45)
 ax0.set_yticklabels(x_names)
 for tick in ax0.xaxis.get_major_ticks():
     tick.label.set_fontsize(15)
 for tick in ax0.yaxis.get_major_ticks():
     tick.label.set_fontsize(18)
-plt.title('Difference SG 1 and global model', fontsize=18)
+plt.title('Parameter estimates global model', fontsize=18)
 
-# second
-ax1 =  plt.subplot(gs[1])
-p1 = ax1.imshow(data_new_values_13, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+colorAx = plt.subplot(gs[1])
+cb = plt.colorbar(p0, cax=colorAx)
+cb.set_clim(0,1)
+cb.ax.tick_params(labelsize=15)
+colorAx.yaxis.set_ticks_position('left')
+
+# first
+ax1 =  plt.subplot(gs[2])
+p1 = ax1.imshow(data_new_values_0, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
 ax1.set_xticklabels(x_names, rotation=45)
 ax1.set_yticklabels(x_names)
 for tick in ax1.xaxis.get_major_ticks():
     tick.label.set_fontsize(15)
 for tick in ax1.yaxis.get_major_ticks():
     tick.label.set_fontsize(18)
-plt.title('Difference SG 14 and global model', fontsize=18)
+plt.title('Difference SG 1 and global model', fontsize=18)
 
-# colorbar
-#colorAx = plt.subplot(gs[2])
-cbaxes = fig.add_axes([0.88, 0.308, 0.02, 0.37])  
-cb = plt.colorbar(p1, cax=cbaxes)
+colorAx = plt.subplot(gs[3])
+cb = plt.colorbar(p1, cax=colorAx)
 cb.set_clim(-0.5,0.5)
 cb.ax.tick_params(labelsize=15)
-#colorAx.yaxis.set_ticks_position('left')
+colorAx.yaxis.set_ticks_position('left')
+
+# second
+ax2 =  plt.subplot(gs[4])
+p2 = ax2.imshow(data_new_values_2, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+ax2.set_xticklabels(x_names, rotation=45)
+ax2.set_yticklabels(x_names)
+for tick in ax2.xaxis.get_major_ticks():
+    tick.label.set_fontsize(15)
+for tick in ax2.yaxis.get_major_ticks():
+    tick.label.set_fontsize(18)
+plt.title('Difference SG 3 and global model', fontsize=18)
+
+colorAx = plt.subplot(gs[5])
+cb = plt.colorbar(p2, cax=colorAx)
+cb.set_clim(-0.5,0.5)
+cb.ax.tick_params(labelsize=15)
+colorAx.yaxis.set_ticks_position('left')
+
+# second
+ax3 =  plt.subplot(gs[6])
+p3 = ax3.imshow(data_new_values_13, aspect=1, vmin=-0.5, vmax=0.5, cmap=plt.get_cmap('bwr'))
+ax3.set_xticklabels(x_names, rotation=45)
+ax3.set_yticklabels(x_names)
+for tick in ax3.xaxis.get_major_ticks():
+    tick.label.set_fontsize(15)
+for tick in ax3.yaxis.get_major_ticks():
+    tick.label.set_fontsize(18)
+plt.title('Difference SG 14 and global model', fontsize=18)
+
+colorAx = plt.subplot(gs[7])
+cb = plt.colorbar(p3, cax=colorAx)
+cb.set_clim(-0.5,0.5)
+cb.ax.tick_params(labelsize=15)
+colorAx.yaxis.set_ticks_position('left')
 
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=None)
-fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_short_difference_sg1_sg14_oneplot.png', bbox_inches='tight')
+fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_short_difference_sg1_sg3_sg14_oneplot.png', bbox_inches='tight')
