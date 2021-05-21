@@ -185,7 +185,10 @@ data_12 <- read_excel("../data_output/results_manuscript/experiment_zero_order_s
 
 # name is too long, but we have to load this dataset
 #data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515_[10, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
-data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515.xlsx")
+#data_19 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210519_[5, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
+
+data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515_copy.xlsx")
+data_19 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210519_copy.xlsx")
 
 length_new_column <- 6 * 1 * 10 * 3 * 3 * 3 * 3
 data_12 <- data_12 %>%
@@ -206,7 +209,17 @@ data_15 <- data_15 %>%
   mutate(measure = gsub("_.*", "", measure)) %>%
   select(-c(true_desc_length, global_model_order, start_at_order, p))
 
-long_data <- rbind(data_12, data_15) %>%
+length_new_column <- 6 * 1 * 5 * 3 * 3 * 3 * 3
+data_19 <- data_19 %>%
+  pivot_longer(
+    cols = names(data_19)[12:dim(data_19)[2]], 
+    names_to = "measure",
+    values_to = "value") %>%
+  add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
+  mutate(measure = gsub("_.*", "", measure)) %>%
+  select(-c(true_desc_length, global_model_order, start_at_order, p))
+
+long_data <- rbind(data_12, data_15, data_19) %>%
   arrange(nreps, as.integer(N), as.integer(T), as.integer(S), 
           as.integer(ncovs), as.integer(subgroup_orders)) %>%
   mutate(true_subgroup_order = as.factor(subgroup_orders)) %>%
@@ -262,7 +275,7 @@ orders <- plot_data %>%
   group_by(N, measure, true_subgroup_order, timepoints, states, ncovs) %>%
   summarize(perc_true_order = 
               100 * sum(subgroup_orders == 
-                          value, na.rm = TRUE) / 10) %>%
+                          value, na.rm = TRUE) / 25) %>%
   ggplot(aes(x = N, y = perc_true_order, fill = ncovs)) + 
   geom_bar(stat = "identity", position = position_dodge(), colour="black") + 
   facet_grid(measure ~ timepoints, labeller = label_both) + 
