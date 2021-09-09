@@ -26,7 +26,8 @@ def rank_result_emm(result_emm=None, quality_measure=None, true_desc_length=None
     descriptions = result_emm.loc['description', covs]
     qualities = result_emm.loc['qualities', :]
 
-    # the true subgroup has a 1 for the first 1,2, or 3 covariates (x0,x1,x2) and NaN for the other covariates
+    # the true subgroup has a 1 for the first 1 or 2 covariates (x0,x1) and NaN for the other covariates
+    # note that x10 is ordered behind x1. This method does not work if you want to check >2 covariates!
     # the length of the description is determined by: true_desc_length
     selection = list(map(lambda x: all([val == [1] for val in descriptions.iloc[x,:true_desc_length].values]) & 
                                     all(pd.isnull(descriptions.iloc[x, true_desc_length:])), np.arange(len(descriptions))))

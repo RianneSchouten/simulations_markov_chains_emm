@@ -43,6 +43,8 @@ def prepare_result_list(result_set=None):
             result_emm['sg'] = np.repeat(np.arange(len(result_set_selected)), 2) 
             result_emm.sort_index(axis=1, inplace=True)  
 
+    print(result_emm.dtypes)
+
     return result_emm
 
 

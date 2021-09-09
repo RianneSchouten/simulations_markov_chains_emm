@@ -41,7 +41,7 @@ if __name__ == '__main__':
     '''
     '''
     # run experiment again, to have more repetitions
-    main(subgroup_order = [1,2,3,4],
+    main(subgroup_orders = [1,2,3,4],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
          markov_model_params={'start_at_order': [4], 'stop_at_order': 1},
          beam_search_params={'b': 8, 'w': 25, 'd': 3, 'q': 20},
