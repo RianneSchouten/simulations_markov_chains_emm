@@ -7,16 +7,16 @@ library(xtable)
 
 setwd("C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/figures/")
 
-#### Simulation results and figures for revised manuscript May 2021 ####
+#### Simulation results and figures for poster sept 2021 ECML PKDD ####
 
-data_phiwd <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_phiwd_20210518_[50, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
-data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_omegatv_phiwrl <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210128_30nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_phiwd <- read_excel("../data_output/results_manuscript_finalized/experiment_higherorders_phiwd_20210518_[50, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
+data_rest <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_omegatv_phiwrl <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210128_30nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 
-data_09 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_10 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_11 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_13 <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210513_[10, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
+data_09 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_10 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_11 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_13 <- read_excel("../data_output/results_manuscript_finalized/experiment_higherorders_20210513_[10, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
 
 total_reps = 10 + 10 + 10 + 10 + 10
 
