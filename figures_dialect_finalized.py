@@ -12,7 +12,7 @@ import qualities_orders as qmo
 
 def load(name_dataset=None):
 
-    location = 'data_output/results_revised_manuscript/real_world_data_experiments/' + name_dataset + '.xlsx'
+    location = 'data_output/results_manuscript_finalized/real_world_data_experiments/' + name_dataset + '.xlsx'
     sheets = pd.read_excel(location, sheet_name=['result_rw_analysis', 'rw_analysis_info', 'considered_subgroups', 'general_params_pd'])
 
     result_rw_analysis = sheets['result_rw_analysis']
@@ -84,7 +84,7 @@ def make_one_pic(data=None, x_names=None, y_names=None, order=None, dif=None, ti
     cb.set_clim(min_value, max_value)
     colorAx.yaxis.set_ticks_position('left')
         
-    fig.savefig(name_fig, bbox_inches='tight')
+    fig.savefig(name_fig, format='eps', dpi=300, bbox_inches='tight')
 
 
 ### DIALECT experiments in Sect. 6.1.1, long sequences,
@@ -108,7 +108,8 @@ data_new_values = data_new_columns.reindex(new_index)
 
 fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_index, order=2, dif = False,
                    title='Parameter estimates entire dataset', 
-                   name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_general.png')
+                   #name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_general.png')
+                   name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_general.eps')
 
 # figure sg 0
 sgn = 0
@@ -133,7 +134,8 @@ data_new_values0 = new_columns.reindex(new_order_states).copy()
 
 fig = make_one_pic(data=data_new_values0, x_names=x_names, y_names=new_order_states, order=1, dif = False,
                    title='Parameter estimates subgroup 1', 
-                   name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_sg1.png')
+                   #name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_sg1.png')
+                   name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_sg1.eps')
 
 # subgroup 0 and dataset together
 
@@ -179,7 +181,8 @@ cb.ax.tick_params(labelsize=15)
 cbaxes1.yaxis.set_ticks_position('left')
 
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.8, hspace=None)
-fig.savefig('figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_global_sg1_oneplot.png', bbox_inches='tight')
+#fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_long_global_sg1_oneplot.png', bbox_inches='tight')
+fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_long_global_sg1_oneplot.eps', format='eps', dpi=300, bbox_inches='tight')
 
 # figure subgroup 1, calculate difference with subgroup 0
 sgn = 1
@@ -205,10 +208,10 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data_dif_10[new_order_states]
 data_new_values_10 = new_columns.reindex(new_order_states).copy()
 
-
 fig = make_one_pic(data=data_new_values_10, x_names=x_names, y_names=new_order_states, order=1, dif = True,
                    title='Difference between SG 2 and SG 1', 
-                   name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_difference_sg2_sg1.png')
+                   #name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_difference_sg2_sg1.png')
+                   name_fig='figures/Figures_manuscript_finalized/visualization_dialect_long_difference_sg2_sg1.eps')
 
 
 # figure subgroup 5, calculate difference with general params
@@ -235,15 +238,6 @@ x_names = [('start')] + list(new_order_states)
 new_index = list(it.product(new_order_states, repeat=2))
 data_new_columns_5 = data_dif_5[new_order_states]
 data_new_values_5 = data_new_columns_5.reindex(new_index)
-
-'''
-fig = make_one_pic(data=data_new_values_5, x_names=x_names, y_names=new_index, order=2, dif = False,
-                   title='Parameters 5', name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_sg5.png')
-'''
-'''
-fig = make_one_pic(data=data_new_values_5, x_names=x_names, y_names=new_index, order=2, dif = True,
-                   title='Difference SG 6 and global model', name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_difference_sg6_global_model.png')
-'''
 
 # subgroup 1 and 5 in one figure
 fig = plt.figure(figsize=(18, 16), dpi=300, facecolor='w', edgecolor='k')
@@ -288,8 +282,8 @@ cb.ax.tick_params(labelsize=15)
 cbaxes1.yaxis.set_ticks_position('left')
 
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.8, hspace=None)
-#fig.savefig('figures/Figures_revised_manuscript/visualization_dialect_long_difference_sg2_sg6_oneplot.png', bbox_inches='tight')
-fig.savefig('figures/Figures_revised_manuscript_aug2021/visualization_dialect_long_global_difference_sg6_oneplot.png', bbox_inches='tight')
+#fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_long_global_difference_sg6_oneplot.png', bbox_inches='tight')
+fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_long_global_difference_sg6_oneplot.eps', format='eps', dpi=300, bbox_inches='tight')
 
 ### DIALECT experiments in Sect. 6.1.2, short sequences
 
@@ -308,11 +302,6 @@ new_order_states = ['AA', 'AB', 'AC', 'AE', 'AF', 'AG', 'AH']
 x_names = [('start')] + list(new_order_states)
 new_columns = data[new_order_states]
 data_new_values = new_columns.reindex(new_order_states).copy()
-
-'''
-fig = make_one_pic(data=data_new_values, x_names=x_names, y_names=new_order_states, order=1, dif = False,
-                   title='Parameters entire dataset', name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_short_general.png')
-'''
 
 # figure sg 0, save parameters as well
 sgn = 0
@@ -336,11 +325,6 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data_dif_0[new_order_states]
 data_new_values_0 = new_columns.reindex(new_order_states).copy()
 
-'''
-fig = make_one_pic(data=data_new_values_0, x_names=x_names, y_names=new_order_states, order=1, dif = True,
-                   title='Difference SG 1 and global model', name_fig='figures/Figures_revised_manuscript_2021/visualization_dialect_short_difference_sg1_global_model.png')
-'''
-
 # figure sg 1, save parameters as well
 sgn = 2
 print(sgn)
@@ -363,12 +347,6 @@ x_names = [('start')] + list(new_order_states)
 new_columns = data_dif_2[new_order_states]
 data_new_values_2 = new_columns.reindex(new_order_states).copy()
 
-'''
-fig = make_one_pic(data=data_new_values_2, x_names=x_names, y_names=new_order_states, order=1, dif = True,
-                   title='Difference SG 3 and global model', 
-                   name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_short_difference_sg3_global_model.png')
-'''
-
 # figure sg 13, save parameters as well
 sgn = 13
 print(sgn)
@@ -390,12 +368,6 @@ new_order_states = ['AA', 'AB', 'AC', 'AE', 'AF', 'AG', 'AH']
 x_names = [('start')] + list(new_order_states)
 new_columns = data_dif_13[new_order_states]
 data_new_values_13 = new_columns.reindex(new_order_states).copy()
-
-'''
-fig = make_one_pic(data=data_new_values_13, x_names=x_names, y_names=new_order_states, order=1, dif = True,
-                   title='Difference SG 14 and global model', 
-                   name_fig='figures/Figures_revised_manuscript_aug2021/visualization_dialect_short_difference_sg14_global_model.png')
-'''
 
 # sg 0, 2 and 13 in one plot
 fig = plt.figure(figsize=(18, 16), dpi=300, facecolor='w', edgecolor='k')
@@ -471,4 +443,5 @@ cb.ax.tick_params(labelsize=15)
 colorAx.yaxis.set_ticks_position('left')
 
 fig.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=None)
-fig.savefig('figures/Figures_revised_manuscript_aug2021/visualization_dialect_short_difference_sg1_sg3_sg14_oneplot.png', bbox_inches='tight')
+#fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_short_difference_sg1_sg3_sg14_oneplot.png', bbox_inches='tight')
+fig.savefig('figures/Figures_manuscript_finalized/visualization_dialect_short_difference_sg1_sg3_sg14_oneplot.eps', format='eps', dpi=300, bbox_inches='tight')
