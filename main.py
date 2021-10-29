@@ -37,7 +37,7 @@ if __name__ == '__main__':
          constraints={'constraint_subgroup_size': 0.1},
          simulation_params={'nreps': 10, 'N': [100], 'ncovs': [20,10,5], 'T': [200, 50, 10], 'S': [10,5,2], 'p': [0.5], 'true_desc_length': [2], 'global_model_order': [1]},
          wcs_params={'run': False, 'gamma': 0.9, 'stop_number_description_selection': 50},
-         seed=20210513, save_location='./data_output/results_revised_manuscript/experiment_higherorders')
+         seed=20210513, save_location='./data_output/results_manuscript_finalized/experiment_higherorders')
     '''
     '''
     # experiment: exceptional starting behaviour
@@ -48,7 +48,7 @@ if __name__ == '__main__':
          constraints={'constraint_subgroup_size': 0.1},
          simulation_params={'nreps': 5, 'N': [1000,500,100], 'ncovs': [20,10,5], 'T': [10,5,2], 'S': [10,5,2], 'p': [0.5], 'true_desc_length': [2], 'global_model_order': [1]},
          wcs_params={'run': True, 'gamma': 0.9, 'stop_number_description_selection': 50},
-         seed=20210518, save_location='./data_output/results_revised_manuscript/experiment_initial_starting_behaviour')
+         seed=20210518, save_location='./data_output/results_manuscript_finalized/experiment_initial_starting_behaviour')
     '''
     '''
     # sensitivity analysis: varying global model order, varying start parameter
@@ -59,7 +59,7 @@ if __name__ == '__main__':
          constraints={'constraint_subgroup_size': 0.1},
          simulation_params={'nreps': 10, 'N': [100], 'ncovs': [20], 'T': [10,200], 'S': [5], 'p': [0.5], 'true_desc_length': [2], 'global_model_order': [1,3]},
          wcs_params={'run': False, 'gamma': 0.9, 'stop_number_description_selection': 50},
-         seed=20210512, save_location='./data_output/results_revised_manuscript/experiment_varying_globalmodel_and_start_parameter'
+         seed=20210512, save_location='./data_output/results_manuscript_finalized/experiment_varying_globalmodel_and_start_parameter'
          )
     '''
     '''
@@ -71,7 +71,7 @@ if __name__ == '__main__':
          constraints={'constraint_subgroup_size': 0.1},
          simulation_params={'nreps': 10, 'N': [100], 'ncovs': [5, 10], 'T': [50], 'S': [5], 'p': [0.35,0.5], 'true_desc_length': [1,2], 'global_model_order': [1]},
          wcs_params={'run': False, 'gamma': 0.9, 'stop_number_description_selection': 50},
-         seed=20210513, save_location='./data_output/results_revised_manuscript/experiment_varying_sample_size'
+         seed=20210513, save_location='./data_output/results_manuscript_finalized/experiment_varying_sample_size'
          )        
     '''
 
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     main(nr_quantiles=8, subgroup_orders = [1,2,3,4],
          quality_measures=['omegatv', 'phiwrl'],
          w=25, d=3, q=20, refs=['dataset'], stop_at_order=1,  
-         start_at_order=4, save_location='./data_output/results_manuscript/experiment_higherorders',
+         start_at_order=4, save_location='./data_output/earlierversions/results_manuscript/experiment_higherorders',
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          nreps=30, seed=20210128, ncovs=[20, 10, 5],
          N=[100], T=[200, 50, 10], S=[10, 5, 2])
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     main(nr_quantiles=8, subgroup_orders = [0],
          quality_measures=['phiwd', 'phibic', 'phiaic', 'phiaicc', 'omegatv', 'phiwrl'],
          w=25, d=3, q=20, start_at_order=1, stop_at_order=0, refs=['dataset'],
-         save_location='./data_output/results_manuscript/experiment_zero_order_subgroups',
+         save_location='./data_output/earlierversions/results_manuscript/experiment_zero_order_subgroups',
          constraint_subgroup_size=0.1, constraint_subgroup_coverage=0.9,
          nreps=10, seed=20210112, ncovs=[20, 10, 5],
          N=[100, 500, 1000], T=[10, 5, 2], S=[10, 5, 2])
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     main(nr_quantiles=8, 
          quality_measures=['deltatv', 'omegatv', 'phiwd', 'phikl', 'phiarl', 'phiwarl'],
          w=25, d=5, q=25,
-         save_location='./data_output/experiment_initialprobs',
+         save_location='./data_output/earlierversions/experiment_initialprobs',
          nreps=25, seed=20200102, ncovs=[2, 5, 25],
          N=[100], T=[2, 5, 25], S=[2, 5, 25])
     '''

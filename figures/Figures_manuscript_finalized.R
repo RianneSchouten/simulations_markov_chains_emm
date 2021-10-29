@@ -7,16 +7,16 @@ library(xtable)
 
 setwd("C:/Users/20200059/Documents/Github/simulations_beam_search_markov_chain/figures/")
 
-#### Simulation results and figures for revised manuscript May 2021 ####
+#### Simulation results and figures for finalized manuscript ####
 
-data_phiwd <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_phiwd_20210518_[50, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
-data_rest <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_omegatv_phiwrl <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210128_30nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_phiwd <- read_excel("../data_output/results_manuscript_finalized/experiment_higherorders_phiwd_20210518_[50, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
+data_rest <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210107_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_omegatv_phiwrl <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210128_30nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
 
-data_09 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_10 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_11 <- read_excel("../data_output/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
-data_13 <- read_excel("../data_output/results_revised_manuscript/experiment_higherorders_20210513_[10, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
+data_09 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210109_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_10 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210110_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_11 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_higherorders_20210115_10nreps_[100]_[200, 50, 10]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_13 <- read_excel("../data_output/results_manuscript_finalized/experiment_higherorders_20210513_[10, [100], [20, 10, 5], [200, 50, 10], [10, 5, 2], [0.5], [2], [1]].xlsx")
 
 total_reps = 10 + 10 + 10 + 10 + 10
 
@@ -142,7 +142,7 @@ ranks <- plot_data %>%
 
 ranks
 
-name <- paste('../figures/Figures_revised_manuscript/ranks_20ncovs.eps', sep = "", collapse = NULL)
+name <- paste('../figures/Figures_manuscript_finalized/ranks_20ncovs.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 24, units = "cm")
 
 plot_data <- long_data %>%
@@ -176,19 +176,19 @@ orders <- plot_data %>%
 
 orders
 
-name <- paste('../figures/Figures_revised_manuscript/orders_20ncovs.eps', sep = "", collapse = NULL)
+name <- paste('../figures/Figures_manuscript_finalized/orders_20ncovs.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 30, units = "cm")
 
 #### Subgroups with exceptional starting behaviour ####
 
-data_12 <- read_excel("../data_output/results_manuscript/experiment_zero_order_subgroups_20210112_10nreps_[100, 500, 1000]_[10, 5, 2]_[10, 5, 2]_[20, 10, 5].xlsx")
+data_12 <- read_excel("../data_output/earlierversions/results_manuscript/experiment_zero_order_subgroups_20210112_10nreps_[100, 500, 1000]_[10, 5, 2]_[10, 5, 2]_[20, 10, 5].xlsx")
 
 # name is too long, but we have to load this dataset
-#data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515_[10, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
-#data_19 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210519_[5, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
+#data_15 <- read_excel("../data_output/results_manuscript_finalized/experiment_initial_starting_behaviour_20210515_[10, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
+#data_19 <- read_excel("../data_output/results_manuscript_finalized/experiment_initial_starting_behaviour_20210519_[5, [1000, 500, 100], [20, 10, 5], [10, 5, 2], [10, 5, 2], [0.5], [2], [1]].xlsx")
 
-data_15 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210515_copy.xlsx")
-data_19 <- read_excel("../data_output/results_revised_manuscript/experiment_initial_starting_behaviour_20210519_copy.xlsx")
+data_15 <- read_excel("../data_output/results_manuscript_finalized/experiment_initial_starting_behaviour_20210515_copy.xlsx")
+data_19 <- read_excel("../data_output/results_manuscript_finalized/experiment_initial_starting_behaviour_20210519_copy.xlsx")
 
 length_new_column <- 6 * 1 * 10 * 3 * 3 * 3 * 3
 data_12 <- data_12 %>%
@@ -263,7 +263,7 @@ ranks <- plot_data %>%
 
 ranks
 
-name <- paste('../figures/Figures_revised_manuscript/ranks_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
+name <- paste('../figures/Figures_manuscript_finalized/ranks_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 16, units = "cm")
 
 orders <- plot_data %>% 
@@ -300,14 +300,14 @@ orders <- plot_data %>%
 
 orders
 
-name <- paste('../figures/Figures_revised_manuscript/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
+name <- paste('../figures/Figures_manuscript_finalized/orders_exceptional_starting_behaviour.eps', sep = "", collapse = NULL)
 ggsave(name, width = 20, height = 16, units = "cm")
 
 #### Sensitivity Analysis ####
 
 ## varying global model, varying start parameter s
 
-data50 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_globalmodel_and_start_parameter_20210511_[10, [100], [20], [50], [5], [0.5], [2], [1, 3]].xlsx")
+data50 <- read_excel("../data_output/results_manuscript_finalized/experiment_varying_globalmodel_and_start_parameter_20210511_[10, [100], [20], [50], [5], [0.5], [2], [1, 3]].xlsx")
 total_reps = 10
 length_new_column = 6 * 4 * 10 * 1 * 1 * 1 * 1 * 2 * 2
 long_data_50 <- data50 %>%
@@ -318,7 +318,7 @@ long_data_50 <- data50 %>%
   add_column(type = rep(c('rank', 'order', 'found_order'), length_new_column)) %>%
   mutate(measure = gsub("_.*", "", measure))
 
-data10200 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_globalmodel_and_start_parameter_20210512_[10, [100], [20], [10, 200], [5], [0.5], [2], [1, 3]].xlsx")
+data10200 <- read_excel("../data_output/results_manuscript_finalized/experiment_varying_globalmodel_and_start_parameter_20210512_[10, [100], [20], [10, 200], [5], [0.5], [2], [1, 3]].xlsx")
 total_reps = 10
 length_new_column = 6 * 4 * 10 * 2 * 1 * 1 * 1 * 2 * 2
 long_data_10200 <- data10200 %>%
@@ -374,8 +374,8 @@ table <- long_data %>% filter(type == 'rank') %>%
 
 ## varying subgroup size and description length
 
-data20 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210512_[10, [100], [20], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
-data510 <- read_excel("../data_output/results_revised_manuscript/experiment_varying_sample_size_20210513_[10, [100], [5, 10], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
+data20 <- read_excel("../data_output/results_manuscript_finalized/experiment_varying_sample_size_20210512_[10, [100], [20], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
+data510 <- read_excel("../data_output/results_manuscript_finalized/experiment_varying_sample_size_20210513_[10, [100], [5, 10], [50], [5], [0.35, 0.5], [1, 2], [1]].xlsx")
 
 total_reps = 10
 length_new_column = 6 * 4 * 10 * 1 * 1 * 1 * 1 * 1 * 1 * 2 * 2
