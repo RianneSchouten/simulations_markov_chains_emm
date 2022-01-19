@@ -1,6 +1,6 @@
 # simulations_beam_search_markov_chain
 
-This repository contains the code for the experiments in the manuscript `Mining Sequences with Exceptional Transition Behaviour of Varying Order using Quality Measures based on Information-Theoretic Scoring Functions', published in the journal Data Mining and Knowledge Discovery (DAMI).
+This repository contains the code for the experiments in the manuscript [Mining Sequences with Exceptional Transition Behaviour of Varying Order using Quality Measures based on Information-Theoretic Scoring Functions](https://rianneschouten.github.io/pdfs/MiningExceptionalSequences_DAMI_2021.pdf)', published in the journal Data Mining and Knowledge Discovery (DAMI).
 
 The files are the result of a long development period, and you will therefore also find files and results for the Work In Progress paper `Mining exceptional sequences using log likelihood based quality measures' presented at the PhD Forum at ECML-PKDD 2020, and for a draft version of the manuscript mentioned above.
 
